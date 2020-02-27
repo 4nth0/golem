@@ -1,0 +1,28 @@
+services: 
+  - name: "Move"
+    port: "8888"
+    type: "HTTP"
+    http_config: 
+      routes:
+        "/ping": 
+          method: "GET"
+          body: '{"message": "pong!"}'
+          # body_file: ""
+          headers: 
+            "Content-Type": "application/json"
+        "/echo/:message":
+          message: "GET"
+          handler:
+            type: "template"
+            template: "${message}"
+            # template_file: ./...
+          code: 200
+  - name: "Consent Service"
+    port: "8889"
+    type: "HTTP"
+    http_config: 
+      routes:
+        "/consents": 
+          body_path: ./templates/consents.json
+          headers: 
+            "Content-Type": "application/json"
