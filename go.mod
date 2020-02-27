@@ -1,4 +1,4 @@
-module main
+module github.com/AnthonyCapirchio/golem
 
 go 1.13
 

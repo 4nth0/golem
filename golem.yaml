@@ -1,7 +1,6 @@
 services: 
   - name: "Move"
-    port: "8888"
-    type: "HTTP"
+    port: "7474"
     http_config: 
       routes:
         "/ping": 
@@ -18,11 +17,10 @@ services:
             # template_file: ./...
           code: 200
   - name: "Consent Service"
-    port: "8889"
-    type: "HTTP"
+    port: "7575"
     http_config: 
       routes:
         "/consents": 
-          body_path: ./templates/consents.json
+          body_file: ./templates/consents.json
           headers: 
             "Content-Type": "application/json"
