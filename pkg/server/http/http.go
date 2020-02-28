@@ -11,17 +11,17 @@ import (
 )
 
 type HttpHandler struct {
-	Method   string
-	Body     string
-	BodyFile string `yaml:"body_file"`
-	Code     int
-	Headers  map[string]string
-	Handler  *Handler
+	Method   string            `yaml:"method"`
+	Body     string            `yaml:"body"`
+	BodyFile string            `yaml:"body_file"`
+	Code     int               `yaml:"code"`
+	Headers  map[string]string `yaml:"headers"`
+	Handler  *Handler          `yaml:"handler"`
 }
 
 type Handler struct {
-	Type         string
-	Template     string
+	Type         string `yaml:"type"`
+	Template     string `yaml:"template"`
 	TemplateFile string `yaml:"template_file"`
 }
 
