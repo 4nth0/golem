@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 
@@ -49,6 +50,10 @@ func jsonCmd() command {
 }
 
 func json(opts *jsonOpts) (err error) {
+
+	if len(opts.entity) == 0 {
+		return errors.New("No entity provided, Please, use at least one entity.")
+	}
 
 	defaultServer := server.NewServer(opts.port)
 

@@ -15,6 +15,7 @@ func main() {
 	commands := map[string]command{
 		"run":  runCmd(),
 		"json": jsonCmd(),
+		"help": helpCmd(),
 	}
 
 	fs := flag.NewFlagSet("golem", flag.ExitOnError)
@@ -24,6 +25,7 @@ func main() {
 	if cmd, ok := commands[args[0]]; !ok {
 		log.Fatalf("Unknown command: %s", args[0])
 	} else if err := cmd.fn(args[1:]); err != nil {
-		log.Fatal(err)
+		help()
+		log.Print(err)
 	}
 }
