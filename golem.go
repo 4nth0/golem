@@ -13,7 +13,8 @@ type command struct {
 
 func main() {
 	commands := map[string]command{
-		"run": runCmd(),
+		"run":  runCmd(),
+		"json": jsonCmd(),
 	}
 
 	fs := flag.NewFlagSet("golem", flag.ExitOnError)

@@ -9,9 +9,8 @@ import (
 	"strconv"
 
 	"github.com/AnthonyCapirchio/golem/internal/server"
-	"github.com/AnthonyCapirchio/golem/pkg/stats"
+	"github.com/AnthonyCapirchio/golem/pkg/router"
 	"github.com/AnthonyCapirchio/golem/pkg/store"
-	"github.com/AnthonyCapirchio/t-mux/router"
 )
 
 var empty []byte = []byte("{}")
@@ -27,8 +26,7 @@ type Entity struct {
 	DBFile string `yaml:"db_file"`
 }
 
-func LaunchService(stats chan<- stats.StatLine, defaultServer *server.ServerClient, port string, config JSONDBConfig) {
-
+func LaunchService(defaultServer *server.ServerClient, port string, config JSONDBConfig) {
 	var s *server.ServerClient
 
 	if port != "" {
@@ -41,10 +39,12 @@ func LaunchService(stats chan<- stats.StatLine, defaultServer *server.ServerClie
 	}
 
 	for key, entity := range config.Entities {
-		go startNewDatabaseServer(key, entity, config.Sync, s.Router)
+		startNewDatabaseServer(key, entity, config.Sync, s.Router)
 	}
 
-	s.Listen()
+	if defaultServer == nil {
+		defaultServer.Listen()
+	}
 }
 
 func startNewDatabaseServer(key string, entity Entity, sync bool, r *router.Router) {
@@ -54,6 +54,8 @@ func startNewDatabaseServer(key string, entity Entity, sync bool, r *router.Rout
 	detailsPath := path + "/:index"
 
 	r.Get(path, func(w http.ResponseWriter, r *http.Request, params map[string]string) {
+		w.Header().Set("Content-Type", "application/json")
+
 		list, err := json.Marshal(db.List())
 		if err != nil {
 			fmt.Println("Err: ", err)
@@ -62,7 +64,9 @@ func startNewDatabaseServer(key string, entity Entity, sync bool, r *router.Rout
 		w.Write(list)
 	})
 
-	r.Tree.AddNode(detailsPath, "GET", func(w http.ResponseWriter, r *http.Request, params map[string]string) {
+	r.Get(detailsPath, func(w http.ResponseWriter, r *http.Request, params map[string]string) {
+		w.Header().Set("Content-Type", "application/json")
+
 		index, _ := strconv.Atoi(params["index"])
 		entry, err := db.GetByIndex(index)
 		if err != nil {
@@ -79,7 +83,7 @@ func startNewDatabaseServer(key string, entity Entity, sync bool, r *router.Rout
 		w.Write(list)
 	})
 
-	r.Tree.AddNode(path, "POST", func(w http.ResponseWriter, req *http.Request, params map[string]string) {
+	r.Post(path, func(w http.ResponseWriter, req *http.Request, params map[string]string) {
 		decoder := json.NewDecoder(req.Body)
 		var t interface{}
 		err := decoder.Decode(&t)
@@ -95,7 +99,7 @@ func startNewDatabaseServer(key string, entity Entity, sync bool, r *router.Rout
 		w.WriteHeader(http.StatusCreated)
 	})
 
-	r.Tree.AddNode(detailsPath, "DELETE", func(w http.ResponseWriter, req *http.Request, params map[string]string) {
+	r.Delete(detailsPath, func(w http.ResponseWriter, req *http.Request, params map[string]string) {
 		index, _ := strconv.Atoi(params["index"])
 		err := db.DeleteFromIndex(index)
 		if err != nil {

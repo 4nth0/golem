@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	"github.com/AnthonyCapirchio/t-mux/router"
+	"github.com/AnthonyCapirchio/golem/pkg/router"
 )
 
 type ServerClient struct {

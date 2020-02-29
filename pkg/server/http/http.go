@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/AnthonyCapirchio/golem/internal/server"
-	"github.com/AnthonyCapirchio/golem/pkg/stats"
 	"github.com/AnthonyCapirchio/golem/pkg/template"
 )
 
@@ -28,7 +27,7 @@ type HTTPServerConfig struct {
 	Routes map[string]HttpHandler
 }
 
-func LaunchService(stats chan<- stats.StatLine, defaultServer *server.ServerClient, port string, config HTTPServerConfig) {
+func LaunchService(defaultServer *server.ServerClient, port string, config HTTPServerConfig) {
 
 	var s *server.ServerClient
 

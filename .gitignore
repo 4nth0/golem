@@ -4,6 +4,7 @@
 
 golem.yaml
 templates
+*.db.json
 
 ### Go ###
 # Binaries for programs and plugins
