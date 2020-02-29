@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/AnthonyCapirchio/golem/internal/server"
 	"github.com/AnthonyCapirchio/golem/pkg/stats"
-	"github.com/AnthonyCapirchio/t-mux/router"
 )
 
 type HttpHandler struct {
@@ -29,10 +29,18 @@ type HTTPServerConfig struct {
 	Routes map[string]HttpHandler
 }
 
-func LaunchHttpService(ok chan<- bool, stats chan<- stats.StatLine, port string, config HTTPServerConfig) {
+func LaunchService(ok chan<- bool, stats chan<- stats.StatLine, defaultServer *server.ServerClient, port string, config HTTPServerConfig) {
 
-	s := http.NewServeMux()
-	r := router.NewRouter()
+	var s *server.ServerClient
+
+	if port != "" {
+		s = server.NewServer(port)
+	} else if defaultServer != nil {
+		s = defaultServer
+	} else {
+		fmt.Println("There is no available server")
+		return
+	}
 
 	for path, route := range config.Routes {
 		func(path string, route HttpHandler) {
@@ -53,7 +61,7 @@ func LaunchHttpService(ok chan<- bool, stats chan<- stats.StatLine, port string,
 				route.Body = loadTemplate(route.BodyFile)
 			}
 
-			r.Get(path, func(w http.ResponseWriter, r *http.Request, params map[string]string) {
+			s.Router.Get(path, func(w http.ResponseWriter, r *http.Request, params map[string]string) {
 
 				if len(route.Headers) > 0 {
 					for key, value := range route.Headers {
@@ -76,17 +84,9 @@ func LaunchHttpService(ok chan<- bool, stats chan<- stats.StatLine, port string,
 		}(path, route)
 	}
 
-	s.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-
-		handler, params := r.GetHandler(req.URL.Path, req.Method)
-		if handler != nil {
-			handler(w, req, params)
-		}
-	})
-
-	fmt.Println("Starting new server: ", port)
-
-	http.ListenAndServe(":"+port, s)
+	if port != "" {
+		s.Listen()
+	}
 }
 
 func executeTemplate(template string, params map[string]string) string {

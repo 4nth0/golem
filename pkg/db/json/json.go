@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/AnthonyCapirchio/golem/internal/server"
 	"github.com/AnthonyCapirchio/golem/pkg/stats"
 	"github.com/AnthonyCapirchio/golem/pkg/store"
 	"github.com/AnthonyCapirchio/t-mux/router"
@@ -26,27 +27,24 @@ type Entity struct {
 	DBFile string `yaml:"db_file"`
 }
 
-func LaunchService(ok chan<- bool, stats chan<- stats.StatLine, port string, config JSONDBConfig) {
+func LaunchService(ok chan<- bool, stats chan<- stats.StatLine, defaultServer *server.ServerClient, port string, config JSONDBConfig) {
 
-	s := http.NewServeMux()
-	r := router.NewRouter()
+	var s *server.ServerClient
 
-	for key, entity := range config.Entities {
-		go startNewDatabaseServer(key, entity, config.Sync, r)
+	if port != "" {
+		s = server.NewServer(port)
+	} else if defaultServer != nil {
+		s = defaultServer
+	} else {
+		fmt.Println("There is no available server")
+		return
 	}
 
-	s.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+	for key, entity := range config.Entities {
+		go startNewDatabaseServer(key, entity, config.Sync, s.Router)
+	}
 
-		handler, params := r.GetHandler(req.URL.Path, req.Method)
-		if handler != nil {
-			handler(w, req, params)
-		}
-	})
-
-	fmt.Println("Starting new server: ", port)
-
-	http.ListenAndServe(":"+port, s)
+	s.Listen()
 }
 
 func startNewDatabaseServer(key string, entity Entity, sync bool, r *router.Router) {
