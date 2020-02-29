@@ -10,7 +10,7 @@ type FilesServerConfig struct {
 	Folder string `yaml:"folder"`
 }
 
-func LaunchService(ok chan<- bool, stats chan<- stats.StatLine, port string, config FilesServerConfig) {
+func LaunchService(stats chan<- stats.StatLine, port string, config FilesServerConfig) {
 
 	fs := http.FileServer(http.Dir(config.Folder))
 	http.Handle("/", fs)

@@ -36,23 +36,21 @@ type Config struct {
 
 func main() {
 	config := loadConfig()
-	ok := make(chan bool)
 	stats := make(chan stats.StatLine)
 	defaultServer := server.NewServer(config.Port)
 
 	for _, service := range config.Services {
-		// go httpService.LaunchHttpService(ok, stats, service.Port, service.HTTPConfig)
 		func(service Service) {
 			if service.Type == "" {
 				service.Type = "HTTP"
 			}
 			switch service.Type {
 			case "HTTP":
-				go httpService.LaunchService(ok, stats, defaultServer, service.Port, service.HTTPConfig)
+				go httpService.LaunchService(stats, defaultServer, service.Port, service.HTTPConfig)
 			case "JSON_SERVER":
-				go jsonServerService.LaunchService(ok, stats, defaultServer, service.Port, service.JSONDBConfig)
+				go jsonServerService.LaunchService(stats, defaultServer, service.Port, service.JSONDBConfig)
 			case "STATIC":
-				go filesServerService.LaunchService(ok, stats, service.Port, service.FilesServerConfig)
+				go filesServerService.LaunchService(stats, service.Port, service.FilesServerConfig)
 			}
 		}(service)
 	}
@@ -60,8 +58,6 @@ func main() {
 	if defaultServer != nil {
 		defaultServer.Listen()
 	}
-
-	<-ok
 }
 
 func launchGRPCService(ok chan<- bool, stats chan<- stats.StatLine, service Service) {

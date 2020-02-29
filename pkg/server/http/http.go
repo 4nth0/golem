@@ -2,12 +2,11 @@ package http
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
-	"strings"
 
 	"github.com/AnthonyCapirchio/golem/internal/server"
 	"github.com/AnthonyCapirchio/golem/pkg/stats"
+	"github.com/AnthonyCapirchio/golem/pkg/template"
 )
 
 type HttpHandler struct {
@@ -29,7 +28,7 @@ type HTTPServerConfig struct {
 	Routes map[string]HttpHandler
 }
 
-func LaunchService(ok chan<- bool, stats chan<- stats.StatLine, defaultServer *server.ServerClient, port string, config HTTPServerConfig) {
+func LaunchService(stats chan<- stats.StatLine, defaultServer *server.ServerClient, port string, config HTTPServerConfig) {
 
 	var s *server.ServerClient
 
@@ -54,11 +53,10 @@ func LaunchService(ok chan<- bool, stats chan<- stats.StatLine, defaultServer *s
 
 			if route.Handler != nil && route.Handler.Type == "template" {
 				if route.Handler.TemplateFile != "" {
-					route.Handler.Template = loadTemplate(route.Handler.TemplateFile)
+					route.Handler.Template = template.LoadTemplate(route.Handler.TemplateFile)
 				}
 			} else if route.Body == "" && route.BodyFile != "" {
-				// Use in memory cache
-				route.Body = loadTemplate(route.BodyFile)
+				route.Body = template.LoadTemplate(route.BodyFile)
 			}
 
 			s.Router.Get(path, func(w http.ResponseWriter, r *http.Request, params map[string]string) {
@@ -73,7 +71,7 @@ func LaunchService(ok chan<- bool, stats chan<- stats.StatLine, defaultServer *s
 				if route.Handler != nil {
 					switch route.Handler.Type {
 					case "template":
-						response := executeTemplate(route.Handler.Template, params)
+						response := template.ExecuteTemplate(route.Handler.Template, params)
 						w.Write([]byte(response))
 					}
 				} else {
@@ -87,23 +85,4 @@ func LaunchService(ok chan<- bool, stats chan<- stats.StatLine, defaultServer *s
 	if port != "" {
 		s.Listen()
 	}
-}
-
-func executeTemplate(template string, params map[string]string) string {
-	output := template
-
-	for key, value := range params {
-		output = strings.Replace(output, "${"+key+"}", value, -1)
-	}
-
-	return output
-}
-
-func loadTemplate(path string) string {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		fmt.Println("Err: ", err)
-	}
-
-	return string(data)
 }

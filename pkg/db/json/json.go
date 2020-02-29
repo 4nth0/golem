@@ -27,7 +27,7 @@ type Entity struct {
 	DBFile string `yaml:"db_file"`
 }
 
-func LaunchService(ok chan<- bool, stats chan<- stats.StatLine, defaultServer *server.ServerClient, port string, config JSONDBConfig) {
+func LaunchService(stats chan<- stats.StatLine, defaultServer *server.ServerClient, port string, config JSONDBConfig) {
 
 	var s *server.ServerClient
 
