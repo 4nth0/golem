@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/AnthonyCapirchio/golem/internal/server"
 	jsonServerService "github.com/AnthonyCapirchio/golem/pkg/db/json"
+	filesServerService "github.com/AnthonyCapirchio/golem/pkg/server/files"
 	httpService "github.com/AnthonyCapirchio/golem/pkg/server/http"
 	"github.com/AnthonyCapirchio/golem/pkg/stats"
 	yaml "gopkg.in/yaml.v2"
@@ -19,23 +21,26 @@ type HttpHandler struct {
 type GRPCServerConfig struct{}
 
 type Service struct {
-	Port         string                         `yaml:"port"`
-	Name         string                         `yaml:"name"`
-	Type         string                         `yaml:"type"`
-	HTTPConfig   httpService.HTTPServerConfig   `yaml:"http_config"`
-	JSONDBConfig jsonServerService.JSONDBConfig `yaml:"json_server_config"`
+	Port              string                               `yaml:"port"`
+	Name              string                               `yaml:"name"`
+	Type              string                               `yaml:"type"`
+	HTTPConfig        httpService.HTTPServerConfig         `yaml:"http_config"`
+	JSONDBConfig      jsonServerService.JSONDBConfig       `yaml:"json_server_config"`
+	FilesServerConfig filesServerService.FilesServerConfig `yaml:"static_server_config"`
 }
 
 type Config struct {
+	Port     string    `yaml:"port"`
 	Services []Service `yaml:"services"`
 }
 
 func main() {
-	s := loadConfig()
+	config := loadConfig()
 	ok := make(chan bool)
 	stats := make(chan stats.StatLine)
+	defaultServer := server.NewServer(config.Port)
 
-	for _, service := range s.Services {
+	for _, service := range config.Services {
 		// go httpService.LaunchHttpService(ok, stats, service.Port, service.HTTPConfig)
 		func(service Service) {
 			if service.Type == "" {
@@ -43,11 +48,17 @@ func main() {
 			}
 			switch service.Type {
 			case "HTTP":
-				go httpService.LaunchHttpService(ok, stats, service.Port, service.HTTPConfig)
+				go httpService.LaunchService(ok, stats, defaultServer, service.Port, service.HTTPConfig)
 			case "JSON_SERVER":
-				go jsonServerService.LaunchService(ok, stats, service.Port, service.JSONDBConfig)
+				go jsonServerService.LaunchService(ok, stats, defaultServer, service.Port, service.JSONDBConfig)
+			case "STATIC":
+				go filesServerService.LaunchService(ok, stats, service.Port, service.FilesServerConfig)
 			}
 		}(service)
+	}
+
+	if defaultServer != nil {
+		defaultServer.Listen()
 	}
 
 	<-ok
