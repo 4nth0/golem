@@ -1,81 +1,28 @@
 package main
 
 import (
-	"fmt"
-	"io/ioutil"
-
-	"github.com/AnthonyCapirchio/golem/internal/server"
-	jsonServerService "github.com/AnthonyCapirchio/golem/pkg/db/json"
-	filesServerService "github.com/AnthonyCapirchio/golem/pkg/server/files"
-	httpService "github.com/AnthonyCapirchio/golem/pkg/server/http"
-	"github.com/AnthonyCapirchio/golem/pkg/stats"
-	yaml "gopkg.in/yaml.v2"
+	"flag"
+	"log"
+	"os"
 )
 
-type HttpHandler struct {
-	Method string
-	Body   string
-	Code   int16
-}
-
-type GRPCServerConfig struct{}
-
-type Service struct {
-	Port              string                               `yaml:"port"`
-	Name              string                               `yaml:"name"`
-	Type              string                               `yaml:"type"`
-	HTTPConfig        httpService.HTTPServerConfig         `yaml:"http_config"`
-	JSONDBConfig      jsonServerService.JSONDBConfig       `yaml:"json_server_config"`
-	FilesServerConfig filesServerService.FilesServerConfig `yaml:"static_server_config"`
-}
-
-type Config struct {
-	Port     string    `yaml:"port"`
-	Services []Service `yaml:"services"`
+type command struct {
+	fs *flag.FlagSet
+	fn func(args []string) error
 }
 
 func main() {
-	config := loadConfig()
-	stats := make(chan stats.StatLine)
-	defaultServer := server.NewServer(config.Port)
-
-	for _, service := range config.Services {
-		func(service Service) {
-			if service.Type == "" {
-				service.Type = "HTTP"
-			}
-			switch service.Type {
-			case "HTTP":
-				go httpService.LaunchService(stats, defaultServer, service.Port, service.HTTPConfig)
-			case "JSON_SERVER":
-				go jsonServerService.LaunchService(stats, defaultServer, service.Port, service.JSONDBConfig)
-			case "STATIC":
-				go filesServerService.LaunchService(stats, service.Port, service.FilesServerConfig)
-			}
-		}(service)
+	commands := map[string]command{
+		"run": runCmd(),
 	}
 
-	if defaultServer != nil {
-		defaultServer.Listen()
+	fs := flag.NewFlagSet("golem", flag.ExitOnError)
+	fs.Parse(os.Args[1:])
+	args := fs.Args()
+
+	if cmd, ok := commands[args[0]]; !ok {
+		log.Fatalf("Unknown command: %s", args[0])
+	} else if err := cmd.fn(args[1:]); err != nil {
+		log.Fatal(err)
 	}
-}
-
-func launchGRPCService(ok chan<- bool, stats chan<- stats.StatLine, service Service) {
-	//
-}
-
-func loadConfig() *Config {
-	t := Config{}
-
-	data, err := ioutil.ReadFile("./golem.yaml")
-	if err != nil {
-		fmt.Println("Err: ", err)
-	}
-
-	err = yaml.Unmarshal(data, &t)
-	if err != nil {
-		fmt.Println("error: %v", err)
-	}
-
-	return &t
 }
