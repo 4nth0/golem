@@ -26,8 +26,8 @@ type Entity struct {
 	DBFile string `yaml:"db_file"`
 }
 
-func LaunchService(defaultServer *server.ServerClient, port string, config JSONDBConfig) {
-	var s *server.ServerClient
+func LaunchService(defaultServer *server.Client, port string, config JSONDBConfig) {
+	var s *server.Client
 
 	if port != "" {
 		s = server.NewServer(port)

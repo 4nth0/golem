@@ -11,20 +11,23 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+// Service is the Service level configuration struct
 type Service struct {
 	Port              string                               `yaml:"port"`
 	Name              string                               `yaml:"name"`
 	Type              string                               `yaml:"type"`
-	HTTPConfig        httpService.HTTPServerConfig         `yaml:"http_config"`
+	HTTPConfig        httpService.ServerConfig             `yaml:"http_config"`
 	JSONDBConfig      jsonServerService.JSONDBConfig       `yaml:"json_server_config"`
 	FilesServerConfig filesServerService.FilesServerConfig `yaml:"static_server_config"`
 }
 
+// Config is the rout Config struct
 type Config struct {
 	Port     string    `yaml:"port"`
 	Services []Service `yaml:"services"`
 }
 
+// LoadConfig load configuration yaml file content from the specified path
 func LoadConfig(path string) *Config {
 	t := Config{}
 

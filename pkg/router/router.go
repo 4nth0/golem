@@ -21,19 +21,23 @@ func NewRouter() *Router {
 }
 
 func (r *Router) Get(path string, handler tree.Handler) {
-	r.Tree.AddNode(path, "GET", handler)
+	r.Add("GET", path, handler)
 }
 
 func (r *Router) Post(path string, handler tree.Handler) {
-	r.Tree.AddNode(path, "POST", handler)
+	r.Add("POST", path, handler)
 }
 
 func (r *Router) Put(path string, handler tree.Handler) {
-	r.Tree.AddNode(path, "PUT", handler)
+	r.Add("PUT", path, handler)
 }
 
 func (r *Router) Delete(path string, handler tree.Handler) {
-	r.Tree.AddNode(path, "DELETE", handler)
+	r.Add("DELETE", path, handler)
+}
+
+func (r *Router) Add(method string, path string, handler tree.Handler) {
+	r.Tree.AddNode(path, method, handler)
 }
 
 func (r *Router) GetHandler(path, method string) (tree.Handler, map[string]string) {

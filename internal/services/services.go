@@ -8,7 +8,8 @@ import (
 	httpService "github.com/AnthonyCapirchio/golem/pkg/server/http"
 )
 
-func Launch(defaultServer *server.ServerClient, service config.Service) {
+// Launch a new service
+func Launch(defaultServer *server.Client, service config.Service) {
 	if service.Type == "" {
 		service.Type = "HTTP"
 	}
