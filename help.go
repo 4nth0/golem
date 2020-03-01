@@ -16,7 +16,9 @@ func helpCmd() command {
 }
 
 func help() {
-	message := `
+	message := "Golem version " + Version
+	message += `
+
 Usage: golem <command> [command flags]
 
 run command:

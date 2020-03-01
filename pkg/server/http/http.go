@@ -2,6 +2,7 @@ package http
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/AnthonyCapirchio/golem/internal/server"
@@ -30,6 +31,8 @@ type HTTPServerConfig struct {
 func LaunchService(defaultServer *server.ServerClient, port string, config HTTPServerConfig) {
 
 	var s *server.ServerClient
+
+	log.Print("")
 
 	if port != "" {
 		s = server.NewServer(port)

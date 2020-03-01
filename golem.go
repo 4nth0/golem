@@ -11,6 +11,8 @@ type command struct {
 	fn func(args []string) error
 }
 
+var Version string
+
 func main() {
 	commands := map[string]command{
 		"run":  runCmd(),
