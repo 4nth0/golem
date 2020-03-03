@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/AnthonyCapirchio/golem/pkg/router"
@@ -35,5 +36,8 @@ func (s *Client) Listen() {
 		}
 	})
 
-	http.ListenAndServe(":"+s.Port, s.Server)
+	err := http.ListenAndServe(":"+s.Port, s.Server)
+	if err != nil {
+		fmt.Println("Err: ", err)
+	}
 }

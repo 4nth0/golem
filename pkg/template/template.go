@@ -6,10 +6,8 @@ import (
 	"strings"
 )
 
-var BasePath string = ".golem"
-
 func LoadTemplate(path string) string {
-	data, err := ioutil.ReadFile(BasePath + "/" + path)
+	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		fmt.Println("Err: ", err)
 	}

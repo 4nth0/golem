@@ -76,7 +76,7 @@ func launch(log *logger.Logger, path string, route HTTPHandler, s *server.Client
 			route.Handler.Template = template.LoadTemplate(route.Handler.TemplateFile)
 		}
 	} else if route.Body == "" && route.BodyFile != "" {
-		log.Info("Use template file path", logger.String("template_path", route.BodyFile))
+		log.Info("Use body template file path", logger.String("template_path", route.BodyFile))
 		route.Body = template.LoadTemplate(route.BodyFile)
 	}
 
