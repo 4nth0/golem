@@ -24,8 +24,9 @@ type Service struct {
 // Config is the rout Config struct
 type Config struct {
 	path     string
-	Port     string    `yaml:"port"`
-	Services []Service `yaml:"services"`
+	Vars     map[string]string `yaml:"vars,omitempty"`
+	Port     string            `yaml:"port"`
+	Services []Service         `yaml:"services"`
 }
 
 // LoadConfig load configuration yaml file content from the specified path

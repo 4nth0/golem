@@ -35,7 +35,7 @@ func run(log *logger.Logger, opts *runOpts) (err error) {
 
 	for _, service := range cfg.Services {
 		func(service config.Service) {
-			services.Launch(log, defaultServer, service)
+			services.Launch(log, defaultServer, cfg.Vars, service)
 		}(service)
 	}
 

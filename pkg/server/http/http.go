@@ -15,7 +15,7 @@ type HTTPHandler struct {
 	BodyFile string            `yaml:"body_file,omitempty"`
 	Code     int               `yaml:"code,omitempty"`
 	Headers  map[string]string `yaml:"headers,omitempty"`
-	Handler  *Handler          `yaml:"handler,omitempty"`
+	Handler  *Handler          `yaml:"handler,omitempty"` // Should be removed if not used
 }
 
 // Handler
@@ -31,8 +31,7 @@ type ServerConfig struct {
 }
 
 // LaunchService
-func LaunchService(log *logger.Logger, defaultServer *server.Client, port string, config ServerConfig) {
-
+func LaunchService(log *logger.Logger, defaultServer *server.Client, port string, globalVars map[string]string, config ServerConfig) {
 	var s *server.Client
 
 	log.Info("Launch new HTTP service")
@@ -50,7 +49,7 @@ func LaunchService(log *logger.Logger, defaultServer *server.Client, port string
 
 	log.Info("Start routes injection")
 	for path, route := range config.Routes {
-		launch(log, path, route, s)
+		launch(log, path, route, globalVars, s)
 	}
 
 	if port != "" {
@@ -58,7 +57,7 @@ func LaunchService(log *logger.Logger, defaultServer *server.Client, port string
 	}
 }
 
-func launch(log *logger.Logger, path string, route HTTPHandler, s *server.Client) {
+func launch(log *logger.Logger, path string, route HTTPHandler, globalVars map[string]string, s *server.Client) {
 
 	if route.Code == 0 {
 		log.Debug("Status code not provided, use default (200)")
@@ -69,13 +68,7 @@ func launch(log *logger.Logger, path string, route HTTPHandler, s *server.Client
 		route.Method = "GET"
 	}
 
-	if route.Handler != nil && route.Handler.Type == "template" {
-		if route.Handler.TemplateFile != "" {
-			// Auto generate Content-Type from extension
-			log.Info("Use template file path", logger.String("template_path", route.Handler.TemplateFile))
-			route.Handler.Template = template.LoadTemplate(route.Handler.TemplateFile)
-		}
-	} else if route.Body == "" && route.BodyFile != "" {
+	if route.Body == "" && route.BodyFile != "" {
 		log.Info("Use body template file path", logger.String("template_path", route.BodyFile))
 		route.Body = template.LoadTemplate(route.BodyFile)
 	}
@@ -95,15 +88,8 @@ func launch(log *logger.Logger, path string, route HTTPHandler, s *server.Client
 		log.Debug("Use defined status code", logger.Int32("code", int32(route.Code)))
 		w.WriteHeader(route.Code)
 
-		if route.Handler != nil {
-			switch route.Handler.Type {
-			case "template":
-				response := template.ExecuteTemplate(route.Handler.Template, params)
-				w.Write([]byte(response))
-			}
-		} else {
-			w.Write([]byte(route.Body))
-		}
+		response := template.ExecuteTemplate(route.Body, globalVars, params)
+		w.Write([]byte(response))
 
 	})
 }

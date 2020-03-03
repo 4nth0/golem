@@ -10,13 +10,13 @@ import (
 )
 
 // Launch a new service
-func Launch(log *logger.Logger, defaultServer *server.Client, service config.Service) {
+func Launch(log *logger.Logger, defaultServer *server.Client, globalVars map[string]string, service config.Service) {
 	if service.Type == "" {
 		service.Type = "HTTP"
 	}
 	switch service.Type {
 	case "HTTP":
-		go httpService.LaunchService(log, defaultServer, service.Port, service.HTTPConfig)
+		go httpService.LaunchService(log, defaultServer, service.Port, globalVars, service.HTTPConfig)
 	case "JSON_SERVER":
 		go jsonServerService.LaunchService(defaultServer, service.Port, service.JSONDBConfig)
 	case "STATIC":
