@@ -4,22 +4,20 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-
-	"github.com/gol4ng/logger"
 )
 
 type addOpts struct{}
 
-func addCmd(log *logger.Logger) command {
+func addCmd() command {
 	fs := flag.NewFlagSet("golem add", flag.ExitOnError)
 
 	return command{fs, func(args []string) error {
 		fs.Parse(args)
-		return add(log, args)
+		return add(args)
 	}}
 }
 
-func add(log *logger.Logger, args []string) (err error) {
+func add(args []string) (err error) {
 
 	if len(args) < 2 {
 		return errors.New("Not enough arguments")

@@ -6,14 +6,15 @@ import (
 	"github.com/AnthonyCapirchio/golem/internal/config"
 	"github.com/AnthonyCapirchio/golem/internal/server"
 	"github.com/AnthonyCapirchio/golem/internal/services"
-	"github.com/gol4ng/logger"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type runOpts struct {
 	configFile string
 }
 
-func runCmd(log *logger.Logger) command {
+func runCmd() command {
 	fs := flag.NewFlagSet("golem run", flag.ExitOnError)
 
 	opts := &runOpts{}
@@ -22,20 +23,20 @@ func runCmd(log *logger.Logger) command {
 
 	return command{fs, func(args []string) error {
 		fs.Parse(args)
-		return run(log, opts)
+		return run(opts)
 	}}
 }
 
-func run(log *logger.Logger, opts *runOpts) (err error) {
+func run(opts *runOpts) (err error) {
 	log.Info("Load configuration file")
 	cfg := config.LoadConfig(opts.configFile)
 
-	log.Info("Initialize new default server. ", logger.String("port", cfg.Port))
+	log.Info("Initialize new default server. ", cfg.Port)
 	defaultServer := server.NewServer(cfg.Port)
 
 	for _, service := range cfg.Services {
 		func(service config.Service) {
-			services.Launch(log, defaultServer, cfg.Vars, service)
+			services.Launch(defaultServer, cfg.Vars, service)
 		}(service)
 	}
 

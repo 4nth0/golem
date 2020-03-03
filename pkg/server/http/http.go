@@ -5,7 +5,7 @@ import (
 
 	"github.com/AnthonyCapirchio/golem/internal/server"
 	"github.com/AnthonyCapirchio/golem/pkg/template"
-	"github.com/gol4ng/logger"
+	log "github.com/sirupsen/logrus"
 )
 
 // HTTPHandler
@@ -30,8 +30,13 @@ type ServerConfig struct {
 	Routes map[string]HTTPHandler
 }
 
+var (
+	DefaultMethod     string = "GET"
+	DefaultStatusCode int    = 200
+)
+
 // LaunchService
-func LaunchService(log *logger.Logger, defaultServer *server.Client, port string, globalVars map[string]string, config ServerConfig) {
+func LaunchService(defaultServer *server.Client, port string, globalVars map[string]string, config ServerConfig) {
 	var s *server.Client
 
 	log.Info("Launch new HTTP service")
@@ -49,7 +54,7 @@ func LaunchService(log *logger.Logger, defaultServer *server.Client, port string
 
 	log.Info("Start routes injection")
 	for path, route := range config.Routes {
-		launch(log, path, route, globalVars, s)
+		launch(path, route, globalVars, s)
 	}
 
 	if port != "" {
@@ -57,35 +62,62 @@ func LaunchService(log *logger.Logger, defaultServer *server.Client, port string
 	}
 }
 
-func launch(log *logger.Logger, path string, route HTTPHandler, globalVars map[string]string, s *server.Client) {
+func launch(path string, route HTTPHandler, globalVars map[string]string, s *server.Client) {
 
 	if route.Code == 0 {
-		log.Debug("Status code not provided, use default (200)")
-		route.Code = 200
+		log.WithFields(
+			log.Fields{
+				"code": DefaultStatusCode,
+			}).Info("Status code not provided, use default.")
+
+		route.Code = DefaultStatusCode
 	}
 	if route.Method == "" {
-		log.Debug("HTTP method not provided, use default (GET)")
-		route.Method = "GET"
+		log.WithFields(
+			log.Fields{
+				"method": DefaultMethod,
+			}).Info("HTTP method not provided, use default.")
+
+		route.Method = DefaultMethod
 	}
 
 	if route.Body == "" && route.BodyFile != "" {
-		log.Info("Use body template file path", logger.String("template_path", route.BodyFile))
+		log.WithFields(
+			log.Fields{
+				"path": route.BodyFile,
+			}).Info("Use body template file.")
+
 		route.Body = template.LoadTemplate(route.BodyFile)
 	}
 
-	log.Info("Adding new route", logger.String("method", route.Method), logger.String("path", path))
+	log.WithFields(
+		log.Fields{
+			"method": route.Method,
+			"path":   path,
+		}).Info("Adding new route")
+
 	s.Router.Add(route.Method, path, func(w http.ResponseWriter, r *http.Request, params map[string]string) {
 
-		log.Info("New inbound request", logger.String("method", route.Method), logger.String("path", path))
+		log.WithFields(
+			log.Fields{
+				"method": route.Method,
+				"path":   path,
+				"status": route.Code,
+			}).Info("New inbound request.")
 
 		if len(route.Headers) > 0 {
 			for key, value := range route.Headers {
-				log.Debug("Inject response header", logger.String("key", key), logger.String("value", value))
+
+				log.WithFields(
+					log.Fields{
+						"key":   key,
+						"value": value,
+					}).Info("Inject response header.")
+
 				w.Header().Add(key, value)
 			}
 		}
 
-		log.Debug("Use defined status code", logger.Int32("code", int32(route.Code)))
 		w.WriteHeader(route.Code)
 
 		response := template.ExecuteTemplate(route.Body, globalVars, params)

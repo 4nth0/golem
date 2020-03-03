@@ -2,12 +2,9 @@ package main
 
 import (
 	"flag"
-	"log"
 	"os"
 
-	"github.com/gol4ng/logger"
-	"github.com/gol4ng/logger/formatter"
-	"github.com/gol4ng/logger/handler"
+	log "github.com/sirupsen/logrus"
 )
 
 type command struct {
@@ -23,14 +20,15 @@ var ConfigPath string = "./golem.yaml"
 var DefaultPort string = "3000"
 
 func main() {
-	l := logger.NewLogger(handler.Stream(os.Stdout, formatter.NewDefaultFormatter(formatter.WithContext(true))))
+	log.SetOutput(os.Stdout)
+	log.SetLevel(log.TraceLevel)
 
 	commands := map[string]command{
-		"init": initCmd(l),
-		"help": helpCmd(l),
-		"run":  runCmd(l),
-		"json": jsonCmd(l),
-		"add":  addCmd(l),
+		"init": initCmd(),
+		"help": helpCmd(),
+		"run":  runCmd(),
+		"json": jsonCmd(),
+		"add":  addCmd(),
 	}
 
 	fs := flag.NewFlagSet("golem", flag.ExitOnError)

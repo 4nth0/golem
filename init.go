@@ -9,8 +9,6 @@ import (
 
 	"github.com/AnthonyCapirchio/golem/internal/config"
 	httpService "github.com/AnthonyCapirchio/golem/pkg/server/http"
-
-	"github.com/gol4ng/logger"
 )
 
 type initOpts struct {
@@ -29,7 +27,7 @@ Configured port: %s
 // This command create a new configuration file
 // golem init
 
-func initCmd(log *logger.Logger) command {
+func initCmd() command {
 	fs := flag.NewFlagSet("golem init", flag.ExitOnError)
 
 	opts := &initOpts{}
@@ -38,11 +36,11 @@ func initCmd(log *logger.Logger) command {
 
 	return command{fs, func(args []string) error {
 		fs.Parse(args)
-		return initGolem(log, opts)
+		return initGolem(opts)
 	}}
 }
 
-func initGolem(log *logger.Logger, opts *initOpts) (err error) {
+func initGolem(opts *initOpts) (err error) {
 
 	createFolders()
 

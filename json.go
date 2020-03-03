@@ -10,7 +10,6 @@ import (
 	"github.com/AnthonyCapirchio/golem/internal/config"
 	"github.com/AnthonyCapirchio/golem/internal/server"
 	jsonServerService "github.com/AnthonyCapirchio/golem/pkg/db/json"
-	"github.com/gol4ng/logger"
 )
 
 type jsonOpts struct {
@@ -32,7 +31,7 @@ func (s *stringSlice) Set(value string) error {
 	return nil
 }
 
-func jsonCmd(log *logger.Logger) command {
+func jsonCmd() command {
 	fs := flag.NewFlagSet("golem json", flag.ExitOnError)
 
 	opts := &jsonOpts{}
