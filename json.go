@@ -4,10 +4,13 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"os"
+	"text/tabwriter"
 
 	"github.com/AnthonyCapirchio/golem/internal/config"
 	"github.com/AnthonyCapirchio/golem/internal/server"
 	jsonServerService "github.com/AnthonyCapirchio/golem/pkg/db/json"
+	"github.com/gol4ng/logger"
 )
 
 type jsonOpts struct {
@@ -17,12 +20,8 @@ type jsonOpts struct {
 	sync   bool
 }
 
-// Define a type named "intslice" as a slice of ints
 type stringSlice []string
 
-// Now, for our new type, implement the two methods of
-// the flag.Value interface...
-// The first method is String() string
 func (s *stringSlice) String() string {
 	return fmt.Sprintf("%s", *s)
 }
@@ -33,13 +32,13 @@ func (s *stringSlice) Set(value string) error {
 	return nil
 }
 
-func jsonCmd() command {
+func jsonCmd(log *logger.Logger) command {
 	fs := flag.NewFlagSet("golem json", flag.ExitOnError)
 
 	opts := &jsonOpts{}
 
 	fs.StringVar(&opts.path, "path", "", "JSON File")
-	fs.StringVar(&opts.port, "port", "3000", "Server port")
+	fs.StringVar(&opts.port, "port", DefaultPort, "Server port")
 	fs.Var(&opts.entity, "entity", "Entity name")
 	fs.BoolVar(&opts.sync, "sync", true, "FS Sync")
 
@@ -61,7 +60,7 @@ func json(opts *jsonOpts) (err error) {
 
 		entities := map[string]jsonServerService.Entity{
 			entity: jsonServerService.Entity{
-				DBFile: "./" + entity + ".db.json",
+				DBFile: DatabasePath + "/" + entity + ".db.json",
 			},
 		}
 
@@ -74,9 +73,29 @@ func json(opts *jsonOpts) (err error) {
 		}
 
 		go jsonServerService.LaunchService(defaultServer, "", service.JSONDBConfig)
+		printServiceDetails(entity)
 	}
+
+	fmt.Printf("\nJSON Server has been successfully started and listen on port %s.\n", DefaultPort)
 
 	defaultServer.Listen()
 
 	return nil
+}
+
+func printServiceDetails(entity string) {
+	path := "/" + entity
+	detailsPath := path + "/:index"
+
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 16, 8, 2, '\t', 0)
+	defer w.Flush()
+
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "Method", "Path", "Description")
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "------", "----", "-----------")
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "GET", path, "Get all resources")
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "GET", detailsPath, "Get a specific resource specified by the index")
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "POST", path, "Create new resource")
+	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "DELETE", detailsPath, "Delete a specific resource specified by the index")
+	fmt.Fprintf(w, "\n\n")
 }

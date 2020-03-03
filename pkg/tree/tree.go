@@ -85,7 +85,6 @@ func (t TreeNode) GetNode(path, method string) (Handler, map[string]string) {
 
 		if _, ok := currentNode.Childs[key]; !ok {
 			if _, ok := currentNode.Childs[Wildcard]; !ok {
-				fmt.Println("Not Found")
 				return nil, nil
 			} else {
 				params[currentNode.Childs[Wildcard].VarName] = key
@@ -95,7 +94,6 @@ func (t TreeNode) GetNode(path, method string) (Handler, map[string]string) {
 
 		if i == len(splitted)-1 {
 			if currentNode.Childs[key].Handler == nil {
-				fmt.Println("Not Found")
 				return nil, nil
 			} else {
 				if _, ok := currentNode.Childs[key].Handler[method]; !ok {
@@ -125,7 +123,6 @@ func (t *TreeNode) RemoveNode(path string) {
 		key := splitted[i]
 
 		if _, ok := currentNode.Childs[key]; !ok {
-			fmt.Println("Not Found")
 			return
 		}
 

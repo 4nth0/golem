@@ -3,9 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+
+	"github.com/gol4ng/logger"
 )
 
-func helpCmd() command {
+func helpCmd(log *logger.Logger) command {
 	fs := flag.NewFlagSet("golem json", flag.ExitOnError)
 
 	return command{fs, func(args []string) error {

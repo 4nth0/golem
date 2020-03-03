@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"text/tabwriter"
 
 	"github.com/AnthonyCapirchio/golem/internal/server"
 	"github.com/AnthonyCapirchio/golem/pkg/router"
@@ -52,6 +53,10 @@ func startNewDatabaseServer(key string, entity Entity, sync bool, r *router.Rout
 
 	path := "/" + key
 	detailsPath := path + "/:index"
+
+	w := new(tabwriter.Writer)
+	w.Init(os.Stdout, 16, 8, 0, '\t', 0)
+	defer w.Flush()
 
 	r.Get(path, func(w http.ResponseWriter, r *http.Request, params map[string]string) {
 		w.Header().Set("Content-Type", "application/json")
@@ -108,7 +113,6 @@ func startNewDatabaseServer(key string, entity Entity, sync bool, r *router.Rout
 
 		w.WriteHeader(http.StatusOK)
 	})
-
 }
 
 func loadDatabaseFromFile(path string, sync bool) *store.Database {

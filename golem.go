@@ -4,6 +4,10 @@ import (
 	"flag"
 	"log"
 	"os"
+
+	"github.com/gol4ng/logger"
+	"github.com/gol4ng/logger/formatter"
+	"github.com/gol4ng/logger/handler"
 )
 
 type command struct {
@@ -12,12 +16,21 @@ type command struct {
 }
 
 var Version string
+var BasePath string = "./.golem"
+var TemplatePath string = BasePath + "/templates"
+var DatabasePath string = BasePath + "/db"
+var ConfigPath string = "./golem.yaml"
+var DefaultPort string = "3000"
 
 func main() {
+	l := logger.NewLogger(handler.Stream(os.Stdout, formatter.NewDefaultFormatter(formatter.WithContext(true))))
+
 	commands := map[string]command{
-		"run":  runCmd(),
-		"json": jsonCmd(),
-		"help": helpCmd(),
+		"init": initCmd(l),
+		"help": helpCmd(l),
+		"run":  runCmd(l),
+		"json": jsonCmd(l),
+		"add":  addCmd(l),
 	}
 
 	fs := flag.NewFlagSet("golem", flag.ExitOnError)

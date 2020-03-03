@@ -2,9 +2,8 @@
 # Created by https://www.gitignore.io/api/go,osx,linux,windows
 # Edit at https://www.gitignore.io/?templates=go,osx,linux,windows
 
+.golem
 golem.yaml
-templates
-*.db.json
 
 ### Go ###
 # Binaries for programs and plugins
