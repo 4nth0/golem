@@ -3,7 +3,6 @@ package json
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -116,26 +115,13 @@ func startNewDatabaseServer(key string, entity Entity, sync bool, r *router.Rout
 }
 
 func loadDatabaseFromFile(path string, sync bool) *store.Database {
-	db := store.Database{
-		FilePath: path,
-		Sync:     sync,
+	db := store.New(path, sync)
+	err := db.Load()
+	if err != nil {
+		fmt.Println("Err: ", err)
 	}
 
-	if _, err := os.Stat(path); err != nil {
-		if os.IsNotExist(err) {
-			db.InitDefault()
-		}
-	} else {
-		data, err := ioutil.ReadFile(path)
-		if err != nil {
-			fmt.Println("Err: ", err)
-		}
-
-		err = json.Unmarshal(data, &db)
-		if err != nil {
-			fmt.Println("Err: ", err)
-		}
-	}
-
-	return &db
+	return db
 }
+
+// Auto Generate ID

@@ -68,7 +68,7 @@ func launch(path string, route HTTPHandler, globalVars map[string]string, s *ser
 		log.WithFields(
 			log.Fields{
 				"code": DefaultStatusCode,
-			}).Info("Status code not provided, use default.")
+			}).Debug("Status code not provided, use default.")
 
 		route.Code = DefaultStatusCode
 	}
@@ -76,7 +76,7 @@ func launch(path string, route HTTPHandler, globalVars map[string]string, s *ser
 		log.WithFields(
 			log.Fields{
 				"method": DefaultMethod,
-			}).Info("HTTP method not provided, use default.")
+			}).Debug("HTTP method not provided, use default.")
 
 		route.Method = DefaultMethod
 	}
@@ -85,7 +85,7 @@ func launch(path string, route HTTPHandler, globalVars map[string]string, s *ser
 		log.WithFields(
 			log.Fields{
 				"path": route.BodyFile,
-			}).Info("Use body template file.")
+			}).Debug("Use body template file.")
 
 		route.Body = template.LoadTemplate(route.BodyFile)
 	}

@@ -4,19 +4,29 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"text/tabwriter"
 
 	"github.com/AnthonyCapirchio/golem/internal/config"
 	"github.com/AnthonyCapirchio/golem/internal/server"
 	jsonServerService "github.com/AnthonyCapirchio/golem/pkg/db/json"
+	log "github.com/sirupsen/logrus"
 )
 
+var RemoteTemplateAddress = "https://raw.githubusercontent.com/AnthonyCapirchio/golem-sample/master/db"
+
+var DBTemplates = map[string]string{
+	"users": RemoteTemplateAddress + "/users/db.json",
+}
+
 type jsonOpts struct {
-	path   string
-	port   string
-	entity stringSlice
-	sync   bool
+	path      string
+	port      string
+	entities  stringSlice
+	templates stringSlice
+	sync      bool
 }
 
 type stringSlice []string
@@ -38,7 +48,8 @@ func jsonCmd() command {
 
 	fs.StringVar(&opts.path, "path", "", "JSON File")
 	fs.StringVar(&opts.port, "port", DefaultPort, "Server port")
-	fs.Var(&opts.entity, "entity", "Entity name")
+	fs.Var(&opts.entities, "entity", "Entity name")
+	fs.Var(&opts.templates, "template", "Template name")
 	fs.BoolVar(&opts.sync, "sync", true, "FS Sync")
 
 	return command{fs, func(args []string) error {
@@ -49,30 +60,24 @@ func jsonCmd() command {
 
 func json(opts *jsonOpts) (err error) {
 
-	if len(opts.entity) == 0 {
+	if len(opts.entities) == 0 && len(opts.templates) == 0 {
 		return errors.New("No entity provided, Please, use at least one entity.")
 	}
 
 	defaultServer := server.NewServer(opts.port)
 
-	for _, entity := range opts.entity {
+	for _, entity := range opts.entities {
+		go initializeEntity(entity, opts, defaultServer)
+	}
 
-		entities := map[string]jsonServerService.Entity{
-			entity: jsonServerService.Entity{
-				DBFile: DatabasePath + "/" + entity + ".db.json",
-			},
+	for _, template := range opts.templates {
+		if value, ok := DBTemplates[template]; ok != false {
+			err := pullTemplate(template, value)
+			if err != nil {
+				fmt.Println("Err: ", err)
+			}
+			initializeEntity(template, opts, defaultServer)
 		}
-
-		service := config.Service{
-			Port: opts.port,
-			JSONDBConfig: jsonServerService.JSONDBConfig{
-				Entities: entities,
-				Sync:     opts.sync,
-			},
-		}
-
-		go jsonServerService.LaunchService(defaultServer, "", service.JSONDBConfig)
-		printServiceDetails(entity)
 	}
 
 	fmt.Printf("\nJSON Server has been successfully started and listen on port %s.\n", DefaultPort)
@@ -80,6 +85,49 @@ func json(opts *jsonOpts) (err error) {
 	defaultServer.Listen()
 
 	return nil
+}
+
+func pullTemplate(entity, path string) error {
+
+	log.WithFields(
+		log.Fields{
+			"entity": entity,
+			"path":   path,
+		}).Info("Pull DB template.")
+
+	resp, err := http.Get(path)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	out, err := os.Create(DatabasePath + "/" + entity + ".db.json")
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, resp.Body)
+	return err
+}
+
+func initializeEntity(entity string, opts *jsonOpts, defaultServer *server.Client) {
+	entities := map[string]jsonServerService.Entity{
+		entity: jsonServerService.Entity{
+			DBFile: DatabasePath + "/" + entity + ".db.json",
+		},
+	}
+
+	service := config.Service{
+		Port: opts.port,
+		JSONDBConfig: jsonServerService.JSONDBConfig{
+			Entities: entities,
+			Sync:     opts.sync,
+		},
+	}
+
+	go jsonServerService.LaunchService(defaultServer, "", service.JSONDBConfig)
+	printServiceDetails(entity)
 }
 
 func printServiceDetails(entity string) {

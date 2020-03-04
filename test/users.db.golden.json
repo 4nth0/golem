@@ -1,0 +1,34 @@
+[
+    {
+        "name": "Dean Winchester",
+        "type": "Hunter"
+    },
+    {
+        "name": "Sam Winchester",
+        "type": "Hunter"
+    },
+    {
+        "name": "Bobby Singer",
+        "type": "Hunter"
+    },
+    {
+        "name": "Castiel",
+        "type": "Angel"
+    },
+    {
+        "name": "Ruby",
+        "type": "Demon"
+    },
+    {
+        "name": "Crowley",
+        "type": "Demon"
+    },
+    {
+        "name": "Lucifer",
+        "type": "Angel"
+    },
+    {
+        "name": "Jack",
+        "type": "Nephilim"
+    }
+]
