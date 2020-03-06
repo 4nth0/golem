@@ -43,7 +43,7 @@ func (db *Database) Load() error {
 	if err == nil {
 		data, err := ioutil.ReadFile(db.FilePath)
 		if err != nil {
-			fmt.Println("Err: ", err)
+			return err
 		}
 
 		err = json.Unmarshal(data, &db.Entries)
