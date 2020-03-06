@@ -1,18 +1,17 @@
 package template
 
 import (
-	"fmt"
 	"io/ioutil"
 	"strings"
 )
 
-func LoadTemplate(path string) string {
+func LoadTemplate(path string) (string, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		fmt.Println("Err: ", err)
+		return "", err
 	}
 
-	return string(data)
+	return string(data), nil
 }
 
 func ExecuteTemplate(template string, vars map[string]string, params map[string]string) string {
