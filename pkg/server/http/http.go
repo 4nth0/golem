@@ -87,7 +87,15 @@ func launch(path string, route HTTPHandler, globalVars map[string]string, s *ser
 				"path": route.BodyFile,
 			}).Debug("Use body template file.")
 
-		route.Body = template.LoadTemplate(route.BodyFile)
+		result, err := template.LoadTemplate(route.BodyFile)
+		if err != nil {
+			log.WithFields(
+				log.Fields{
+					"path": route.BodyFile,
+				}).Info("Adding new route")
+		} else {
+			route.Body = result
+		}
 	}
 
 	log.WithFields(
