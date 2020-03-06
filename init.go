@@ -7,8 +7,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/AnthonyCapirchio/golem/internal/config"
-	httpService "github.com/AnthonyCapirchio/golem/pkg/server/http"
+	"github.com/4nth0/golem/internal/config"
+	httpService "github.com/4nth0/golem/pkg/server/http"
 )
 
 type initOpts struct {

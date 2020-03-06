@@ -3,7 +3,7 @@ package server
 import (
 	"net/http"
 
-	"github.com/AnthonyCapirchio/golem/pkg/router"
+	"github.com/4nth0/golem/pkg/router"
 	log "github.com/sirupsen/logrus"
 )
 

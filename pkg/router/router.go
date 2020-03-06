@@ -3,7 +3,7 @@ package router
 import (
 	"net/http"
 
-	"github.com/AnthonyCapirchio/golem/pkg/tree"
+	"github.com/4nth0/golem/pkg/tree"
 )
 
 type Router struct {

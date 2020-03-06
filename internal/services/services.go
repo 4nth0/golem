@@ -1,11 +1,11 @@
 package services
 
 import (
-	"github.com/AnthonyCapirchio/golem/internal/config"
-	"github.com/AnthonyCapirchio/golem/internal/server"
-	jsonServerService "github.com/AnthonyCapirchio/golem/pkg/db/json"
-	filesServerService "github.com/AnthonyCapirchio/golem/pkg/server/files"
-	httpService "github.com/AnthonyCapirchio/golem/pkg/server/http"
+	"github.com/4nth0/golem/internal/config"
+	"github.com/4nth0/golem/internal/server"
+	jsonServerService "github.com/4nth0/golem/pkg/db/json"
+	filesServerService "github.com/4nth0/golem/pkg/server/files"
+	httpService "github.com/4nth0/golem/pkg/server/http"
 )
 
 // Launch a new service

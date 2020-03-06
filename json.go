@@ -9,13 +9,13 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/AnthonyCapirchio/golem/internal/config"
-	"github.com/AnthonyCapirchio/golem/internal/server"
-	jsonServerService "github.com/AnthonyCapirchio/golem/pkg/db/json"
+	"github.com/4nth0/golem/internal/config"
+	"github.com/4nth0/golem/internal/server"
+	jsonServerService "github.com/4nth0/golem/pkg/db/json"
 	log "github.com/sirupsen/logrus"
 )
 
-var RemoteTemplateAddress = "https://raw.githubusercontent.com/AnthonyCapirchio/golem-sample/master/db"
+var RemoteTemplateAddress = "https://raw.githubusercontent.com/4nth0/golem-sample/master/db"
 
 var DBTemplates = map[string]string{
 	"users": RemoteTemplateAddress + "/users/db.json",

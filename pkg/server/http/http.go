@@ -3,8 +3,8 @@ package http
 import (
 	"net/http"
 
-	"github.com/AnthonyCapirchio/golem/internal/server"
-	"github.com/AnthonyCapirchio/golem/pkg/template"
+	"github.com/4nth0/golem/internal/server"
+	"github.com/4nth0/golem/pkg/template"
 	log "github.com/sirupsen/logrus"
 )
 

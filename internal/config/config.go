@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	jsonServerService "github.com/AnthonyCapirchio/golem/pkg/db/json"
-	filesServerService "github.com/AnthonyCapirchio/golem/pkg/server/files"
-	httpService "github.com/AnthonyCapirchio/golem/pkg/server/http"
+	jsonServerService "github.com/4nth0/golem/pkg/db/json"
+	filesServerService "github.com/4nth0/golem/pkg/server/files"
+	httpService "github.com/4nth0/golem/pkg/server/http"
 
 	yaml "gopkg.in/yaml.v2"
 )

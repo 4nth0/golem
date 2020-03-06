@@ -3,9 +3,9 @@ package main
 import (
 	"flag"
 
-	"github.com/AnthonyCapirchio/golem/internal/config"
-	"github.com/AnthonyCapirchio/golem/internal/server"
-	"github.com/AnthonyCapirchio/golem/internal/services"
+	"github.com/4nth0/golem/internal/config"
+	"github.com/4nth0/golem/internal/server"
+	"github.com/4nth0/golem/internal/services"
 
 	log "github.com/sirupsen/logrus"
 )

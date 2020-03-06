@@ -1,6 +1,4 @@
 bou.ke/monkey v1.0.1/go.mod h1:FgHuK96Rv2Nlf+0u1OOVDpCMdsWyOFmeeketDHE7LIg=
-github.com/AnthonyCapirchio/t-mux v0.0.0-20200227180604-e2d143ef36a2 h1:8RGUA5wbtjOenJENLv3KpkAMhuugxWLCAdPCUgldJaY=
-github.com/AnthonyCapirchio/t-mux v0.0.0-20200227180604-e2d143ef36a2/go.mod h1:bwo/tpLu0vLsKjX3XSjKdphYduSYg6o+7N283ilGSpY=
 github.com/client9/misspell v0.3.4 h1:ta993UF76GwbvJcIo3Y68y/M3WxlpEHPWIGDkJYwzJI=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
