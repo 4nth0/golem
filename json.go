@@ -11,8 +11,8 @@ import (
 
 	"github.com/4nth0/golem/internal/command"
 	"github.com/4nth0/golem/internal/config"
-	"github.com/4nth0/golem/internal/server"
 	jsonServerService "github.com/4nth0/golem/pkg/db/json"
+	"github.com/4nth0/golem/server"
 	log "github.com/sirupsen/logrus"
 )
 

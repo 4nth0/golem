@@ -5,8 +5,8 @@ import (
 
 	"github.com/4nth0/golem/internal/command"
 	"github.com/4nth0/golem/internal/config"
-	"github.com/4nth0/golem/internal/server"
 	"github.com/4nth0/golem/internal/services"
+	"github.com/4nth0/golem/server"
 
 	log "github.com/sirupsen/logrus"
 )

@@ -8,9 +8,9 @@ import (
 	"strconv"
 	"text/tabwriter"
 
-	"github.com/4nth0/golem/internal/server"
 	"github.com/4nth0/golem/pkg/router"
 	"github.com/4nth0/golem/pkg/store"
+	"github.com/4nth0/golem/server"
 )
 
 var empty []byte = []byte("{}")
