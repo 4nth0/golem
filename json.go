@@ -9,6 +9,7 @@ import (
 	"os"
 	"text/tabwriter"
 
+	"github.com/4nth0/golem/internal/command"
 	"github.com/4nth0/golem/internal/config"
 	"github.com/4nth0/golem/internal/server"
 	jsonServerService "github.com/4nth0/golem/pkg/db/json"
@@ -41,7 +42,7 @@ func (s *stringSlice) Set(value string) error {
 	return nil
 }
 
-func jsonCmd() command {
+func jsonCmd() command.Command {
 	fs := flag.NewFlagSet("golem json", flag.ExitOnError)
 
 	opts := &JsonOpts{}
@@ -52,7 +53,7 @@ func jsonCmd() command {
 	fs.Var(&opts.templates, "template", "Template name")
 	fs.BoolVar(&opts.sync, "sync", true, "FS Sync")
 
-	return command{fs, func(args []string) error {
+	return command.Command{fs, func(args []string) error {
 		fs.Parse(args)
 		return Json(opts)
 	}}

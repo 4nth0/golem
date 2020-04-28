@@ -1,8 +1,9 @@
-package main
+package run
 
 import (
 	"flag"
 
+	"github.com/4nth0/golem/internal/command"
 	"github.com/4nth0/golem/internal/config"
 	"github.com/4nth0/golem/internal/server"
 	"github.com/4nth0/golem/internal/services"
@@ -14,14 +15,14 @@ type RunOpts struct {
 	configFile string
 }
 
-func runCmd() command {
+func RunCmd(configPath string) command.Command {
 	fs := flag.NewFlagSet("golem run", flag.ExitOnError)
 
 	opts := &RunOpts{}
 
-	fs.StringVar(&opts.configFile, "config", ConfigPath, "Config File")
+	fs.StringVar(&opts.configFile, "config", configPath, "Config File")
 
-	return command{fs, func(args []string) error {
+	return command.Command{fs, func(args []string) error {
 		fs.Parse(args)
 		return Run(opts)
 	}}

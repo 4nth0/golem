@@ -4,14 +4,16 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+
+	"github.com/4nth0/golem/internal/command"
 )
 
 type addOpts struct{}
 
-func addCmd() command {
+func addCmd() command.Command {
 	fs := flag.NewFlagSet("golem add", flag.ExitOnError)
 
-	return command{fs, func(args []string) error {
+	return command.Command{fs, func(args []string) error {
 		fs.Parse(args)
 		return Add(args)
 	}}

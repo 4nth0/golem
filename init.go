@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/4nth0/golem/internal/command"
 	"github.com/4nth0/golem/internal/config"
 	httpService "github.com/4nth0/golem/pkg/server/http"
 )
@@ -27,10 +28,10 @@ Configured port: %s
 // This command create a new configuration file
 // golem init
 
-func initCmd() command {
+func initCmd() command.Command {
 	fs := flag.NewFlagSet("golem init", flag.ExitOnError)
 
-	return command{fs, func(args []string) error {
+	return command.Command{fs, func(args []string) error {
 		fs.Parse(args)
 		return InitGolem()
 	}}
