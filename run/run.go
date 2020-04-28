@@ -12,7 +12,7 @@ import (
 )
 
 type RunOpts struct {
-	configFile string
+	ConfigFile string
 }
 
 func RunCmd(configPath string) command.Command {
@@ -20,7 +20,7 @@ func RunCmd(configPath string) command.Command {
 
 	opts := &RunOpts{}
 
-	fs.StringVar(&opts.configFile, "config", configPath, "Config File")
+	fs.StringVar(&opts.ConfigFile, "config", configPath, "Config File")
 
 	return command.Command{fs, func(args []string) error {
 		fs.Parse(args)
@@ -30,7 +30,7 @@ func RunCmd(configPath string) command.Command {
 
 func Run(opts *RunOpts) (err error) {
 	log.Info("Load configuration file")
-	cfg := config.LoadConfig(opts.configFile)
+	cfg := config.LoadConfig(opts.ConfigFile)
 
 	log.Info("Initialize new default server. ", cfg.Port)
 	defaultServer := server.NewServer(cfg.Port)
