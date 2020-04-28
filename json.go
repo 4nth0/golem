@@ -21,7 +21,7 @@ var DBTemplates = map[string]string{
 	"users": RemoteTemplateAddress + "/users/db.json",
 }
 
-type jsonOpts struct {
+type JsonOpts struct {
 	path      string
 	port      string
 	entities  stringSlice
@@ -44,7 +44,7 @@ func (s *stringSlice) Set(value string) error {
 func jsonCmd() command {
 	fs := flag.NewFlagSet("golem json", flag.ExitOnError)
 
-	opts := &jsonOpts{}
+	opts := &JsonOpts{}
 
 	fs.StringVar(&opts.path, "path", "", "JSON File")
 	fs.StringVar(&opts.port, "port", DefaultPort, "Server port")
@@ -54,11 +54,11 @@ func jsonCmd() command {
 
 	return command{fs, func(args []string) error {
 		fs.Parse(args)
-		return json(opts)
+		return Json(opts)
 	}}
 }
 
-func json(opts *jsonOpts) (err error) {
+func Json(opts *JsonOpts) (err error) {
 
 	if len(opts.entities) == 0 && len(opts.templates) == 0 {
 		return errors.New("No entity provided, Please, use at least one entity.")
@@ -111,7 +111,7 @@ func pullTemplate(entity, path string) error {
 	return err
 }
 
-func initializeEntity(entity string, opts *jsonOpts, defaultServer *server.Client) {
+func initializeEntity(entity string, opts *JsonOpts, defaultServer *server.Client) {
 	entities := map[string]jsonServerService.Entity{
 		entity: jsonServerService.Entity{
 			DBFile: DatabasePath + "/" + entity + ".db.json",

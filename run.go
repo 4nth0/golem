@@ -10,24 +10,24 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type runOpts struct {
+type RunOpts struct {
 	configFile string
 }
 
 func runCmd() command {
 	fs := flag.NewFlagSet("golem run", flag.ExitOnError)
 
-	opts := &runOpts{}
+	opts := &RunOpts{}
 
 	fs.StringVar(&opts.configFile, "config", ConfigPath, "Config File")
 
 	return command{fs, func(args []string) error {
 		fs.Parse(args)
-		return run(opts)
+		return Run(opts)
 	}}
 }
 
-func run(opts *runOpts) (err error) {
+func Run(opts *RunOpts) (err error) {
 	log.Info("Load configuration file")
 	cfg := config.LoadConfig(opts.configFile)
 

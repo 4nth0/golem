@@ -13,11 +13,11 @@ func addCmd() command {
 
 	return command{fs, func(args []string) error {
 		fs.Parse(args)
-		return add(args)
+		return Add(args)
 	}}
 }
 
-func add(args []string) (err error) {
+func Add(args []string) (err error) {
 
 	if len(args) < 2 {
 		return errors.New("Not enough arguments")

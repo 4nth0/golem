@@ -30,17 +30,13 @@ Configured port: %s
 func initCmd() command {
 	fs := flag.NewFlagSet("golem init", flag.ExitOnError)
 
-	opts := &initOpts{}
-
-	// fs.StringVar(&opts.configFile, "config", "./.golem/golem.yaml", "Config File")
-
 	return command{fs, func(args []string) error {
 		fs.Parse(args)
-		return initGolem(opts)
+		return InitGolem()
 	}}
 }
 
-func initGolem(opts *initOpts) (err error) {
+func InitGolem() (err error) {
 
 	createFolders()
 
