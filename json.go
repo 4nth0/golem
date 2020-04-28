@@ -65,7 +65,7 @@ func Json(opts *JsonOpts) (err error) {
 		return errors.New("No entity provided, Please, use at least one entity.")
 	}
 
-	defaultServer := server.NewServer(opts.port)
+	defaultServer := server.NewServer(opts.port, nil)
 
 	for _, entity := range opts.entities {
 		go initializeEntity(entity, opts, defaultServer)
@@ -127,7 +127,7 @@ func initializeEntity(entity string, opts *JsonOpts, defaultServer *server.Clien
 		},
 	}
 
-	go jsonServerService.LaunchService(defaultServer, "", service.JSONDBConfig)
+	go jsonServerService.LaunchService(defaultServer, "", service.JSONDBConfig, nil)
 	printServiceDetails(entity)
 }
 

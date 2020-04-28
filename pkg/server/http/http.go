@@ -36,14 +36,14 @@ var (
 )
 
 // LaunchService
-func LaunchService(defaultServer *server.Client, port string, globalVars map[string]string, config ServerConfig) {
+func LaunchService(defaultServer *server.Client, port string, globalVars map[string]string, config ServerConfig, requests chan server.InboundRequest) {
 	var s *server.Client
 
 	log.Info("Launch new HTTP service")
 
 	if port != "" {
 		log.Debug("Port provided, create a new server")
-		s = server.NewServer(port)
+		s = server.NewServer(port, requests)
 	} else if defaultServer != nil {
 		log.Debug("No port provided, use the default server")
 		s = defaultServer

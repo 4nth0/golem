@@ -24,20 +24,20 @@ func RunCmd(configPath string) command.Command {
 
 	return command.Command{fs, func(args []string) error {
 		fs.Parse(args)
-		return Run(opts)
+		return Run(opts, nil)
 	}}
 }
 
-func Run(opts *RunOpts) (err error) {
+func Run(opts *RunOpts, requests chan server.InboundRequest) error {
 	log.Info("Load configuration file")
 	cfg := config.LoadConfig(opts.ConfigFile)
 
 	log.Info("Initialize new default server. ", cfg.Port)
-	defaultServer := server.NewServer(cfg.Port)
+	defaultServer := server.NewServer(cfg.Port, requests)
 
 	for _, service := range cfg.Services {
 		func(service config.Service) {
-			services.Launch(defaultServer, cfg.Vars, service)
+			services.Launch(defaultServer, cfg.Vars, service, requests)
 		}(service)
 	}
 
