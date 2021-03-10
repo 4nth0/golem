@@ -40,8 +40,9 @@ func (s *Client) Listen() {
 	s.Server.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
 		log.WithFields(
 			log.Fields{
-				"method": req.Method,
-				"path":   req.URL.Path,
+				"method":  req.Method,
+				"path":    req.URL.Path,
+				"headers": req.Header,
 			}).Info("New inbound request.")
 		handler, params := s.Router.GetHandler(req.URL.Path, req.Method)
 		if handler != nil {
