@@ -40,8 +40,8 @@ func (r *Router) Add(method string, path string, handler tree.Handler) {
 	r.Tree.AddNode(path, method, handler)
 }
 
-func (r *Router) GetHandler(path, method string) (tree.Handler, map[string]string) {
-	handler, params := r.Tree.GetNode(path, method)
+func (r *Router) GetHandler(path, method string) (tree.Handler, map[string]string, error) {
+	handler, params, err := r.Tree.GetNode(path, method)
 
-	return handler, params
+	return handler, params, err
 }

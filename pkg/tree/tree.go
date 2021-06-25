@@ -2,7 +2,7 @@ package tree
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 	"net/http"
 	"strings"
 	"sync"
@@ -72,7 +72,7 @@ func (t *TreeNode) AddNode(path string, method string, handler Handler) {
 	}
 }
 
-func (t TreeNode) GetNode(path, method string) (Handler, map[string]string) {
+func (t TreeNode) GetNode(path, method string) (Handler, map[string]string, error) {
 	if strings.HasPrefix(path, PathDelimiter) {
 		path = strings.TrimPrefix(path, PathDelimiter)
 	}
@@ -85,7 +85,7 @@ func (t TreeNode) GetNode(path, method string) (Handler, map[string]string) {
 
 		if _, ok := currentNode.Childs[key]; !ok {
 			if _, ok := currentNode.Childs[Wildcard]; !ok {
-				return nil, nil
+				return nil, nil, nil
 			} else {
 				params[currentNode.Childs[Wildcard].VarName] = key
 				key = Wildcard
@@ -94,21 +94,19 @@ func (t TreeNode) GetNode(path, method string) (Handler, map[string]string) {
 
 		if i == len(splitted)-1 {
 			if currentNode.Childs[key].Handler == nil {
-				return nil, nil
+				return nil, nil, nil
 			} else {
 				if _, ok := currentNode.Childs[key].Handler[method]; !ok {
-					fmt.Println("Method not allowed")
-					return nil, nil
+					return nil, nil, errors.New("METHOD_NOT_ALLOWED")
 				}
-				return currentNode.Childs[key].Handler[method], params
+				return currentNode.Childs[key].Handler[method], params, nil
 			}
-			return nil, nil
 		}
 
 		currentNode = currentNode.Childs[key]
 	}
 
-	return nil, nil
+	return nil, nil, nil
 }
 
 func (t *TreeNode) RemoveNode(path string) {

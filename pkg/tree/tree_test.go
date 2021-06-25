@@ -38,17 +38,20 @@ func TestGetNode(t *testing.T) {
 	tree.AddNode("/path/to/heaven", "GET", DryHandler)
 	tree.AddNode("/path/to/:param", "GET", DryHandler)
 
-	handler, params := tree.GetNode("/path/to/heaven", "GET")
+	handler, params, _ := tree.GetNode("/path/to/heaven", "GET")
 	assert.NotNil(t, handler)
 	assert.Equal(t, params, map[string]string{})
 
-	handler, params = tree.GetNode("/path/to/hell", "GET")
+	handler, params, _ = tree.GetNode("/path/to/hell", "GET")
 	assert.NotNil(t, handler)
 	assert.Equal(t, "hell", params["param"])
 
-	handler, params = tree.GetNode("/unexistant/path", "GET")
+	handler, params, _ = tree.GetNode("/unexistant/path", "GET")
 	assert.Nil(t, handler)
 	assert.Nil(t, params)
+
+	handler, params, err := tree.GetNode("/path/to/heaven", "POST")
+	assert.NotNil(t, err)
 
 }
 
