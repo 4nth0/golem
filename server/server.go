@@ -46,7 +46,11 @@ func (s *Client) Listen() {
 				"headers": req.Header,
 				"cookies": req.Cookies(),
 			}).Info("New inbound request.")
-		handler, params := s.Router.GetHandler(req.URL.Path, req.Method)
+		handler, params, err := s.Router.GetHandler(req.URL.Path, req.Method)
+		if err != nil {
+			w.WriteHeader(405)
+			return
+		}
 		if handler != nil {
 			if s.InboundRequests != nil {
 				s.InboundRequests <- InboundRequest{
@@ -55,6 +59,8 @@ func (s *Client) Listen() {
 				}
 			}
 			handler(w, req, params)
+		} else {
+			//
 		}
 	})
 
