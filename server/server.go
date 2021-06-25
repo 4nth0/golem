@@ -60,7 +60,7 @@ func (s *Client) Listen() {
 			}
 			handler(w, req, params)
 		} else {
-			//
+			w.WriteHeader(http.StatusNotFound)
 		}
 	})
 
