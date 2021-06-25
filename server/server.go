@@ -48,7 +48,7 @@ func (s *Client) Listen() {
 			}).Info("New inbound request.")
 		handler, params, err := s.Router.GetHandler(req.URL.Path, req.Method)
 		if err != nil {
-			w.WriteHeader(405)
+			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
 		if handler != nil {
