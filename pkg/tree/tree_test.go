@@ -50,6 +50,9 @@ func TestGetNode(t *testing.T) {
 	assert.Nil(t, handler)
 	assert.Nil(t, params)
 
+	handler, params, err := tree.GetNode("/path/to/heaven", "POST")
+	assert.NotNil(t, err)
+
 }
 
 func TestDeleteNode(t *testing.T) {}
