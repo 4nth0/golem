@@ -10,12 +10,13 @@ import (
 
 // HTTPHandler
 type HTTPHandler struct {
-	Method   string            `yaml:"method,omitempty"`
-	Body     string            `yaml:"body,omitempty"`
-	BodyFile string            `yaml:"body_file,omitempty"`
-	Code     int               `yaml:"code,omitempty"`
-	Headers  map[string]string `yaml:"headers,omitempty"`
-	Handler  *Handler          `yaml:"handler,omitempty"` // Should be removed if not used
+	Method   string                 `yaml:"method,omitempty"`
+	Methods  map[string]HTTPHandler `yaml:"methods,omitempty"`
+	Body     string                 `yaml:"body,omitempty"`
+	BodyFile string                 `yaml:"body_file,omitempty"`
+	Code     int                    `yaml:"code,omitempty"`
+	Headers  map[string]string      `yaml:"headers,omitempty"`
+	Handler  *Handler               `yaml:"handler,omitempty"` // Should be removed if not used
 }
 
 // Handler
@@ -54,7 +55,15 @@ func LaunchService(defaultServer *server.Client, port string, globalVars map[str
 
 	log.Info("Start routes injection")
 	for path, route := range config.Routes {
-		launch(path, route, globalVars, s)
+
+		if len(route.Methods) > 0 {
+			for method, route := range route.Methods {
+				route.Method = method
+				launch(path, route, globalVars, s)
+			}
+		} else {
+			launch(path, route, globalVars, s)
+		}
 	}
 
 	if port != "" {
