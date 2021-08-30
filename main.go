@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 
 	"github.com/4nth0/golem/internal/command"
@@ -42,7 +43,7 @@ func main() {
 	if cmd, ok := commands[args[0]]; !ok {
 		log.Fatalf("Unknown command: %s", args[0])
 	} else if err := cmd.Handler(args[1:]); err != nil {
+		fmt.Println(err)
 		help()
-		log.Print(err)
 	}
 }

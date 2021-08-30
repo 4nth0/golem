@@ -22,15 +22,22 @@ func RunCmd(configPath string) command.Command {
 
 	fs.StringVar(&opts.ConfigFile, "config", configPath, "Config File")
 
-	return command.Command{fs, func(args []string) error {
-		fs.Parse(args)
-		return Run(opts, nil)
-	}}
+	return command.Command{
+		FlagSet: fs,
+		Handler: func(args []string) error {
+			fs.Parse(args)
+			return Run(opts, nil)
+		},
+	}
 }
 
 func Run(opts *RunOpts, requests chan server.InboundRequest) error {
 	log.Info("Load configuration file")
-	cfg := config.LoadConfig(opts.ConfigFile)
+	cfg, err := config.LoadConfig(opts.ConfigFile)
+
+	if err != nil {
+		return err
+	}
 
 	log.Info("Initialize new default server. ", cfg.Port)
 	defaultServer := server.NewServer(cfg.Port, requests)
