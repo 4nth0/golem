@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/4nth0/golem/pkg/template"
@@ -37,7 +38,7 @@ var (
 )
 
 // LaunchService
-func LaunchService(defaultServer *server.Client, port string, globalVars map[string]string, config ServerConfig, requests chan server.InboundRequest) {
+func LaunchService(ctx context.Context, defaultServer *server.Client, port string, globalVars map[string]string, config ServerConfig, requests chan server.InboundRequest) {
 	var s *server.Client
 
 	log.Info("Launch new HTTP service")
@@ -66,7 +67,7 @@ func LaunchService(defaultServer *server.Client, port string, globalVars map[str
 	}
 
 	if port != "" {
-		s.Listen()
+		s.Listen(ctx)
 	}
 }
 

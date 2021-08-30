@@ -1,6 +1,7 @@
 package json
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -31,7 +32,7 @@ const (
 	ParamIndexKey   = "index"
 )
 
-func LaunchService(defaultServer *server.Client, port string, config JSONDBConfig, requests chan server.InboundRequest) {
+func LaunchService(ctx context.Context, defaultServer *server.Client, port string, config JSONDBConfig, requests chan server.InboundRequest) {
 	var s *server.Client
 
 	if port != "" {
@@ -48,7 +49,7 @@ func LaunchService(defaultServer *server.Client, port string, config JSONDBConfi
 	}
 
 	if defaultServer == nil {
-		defaultServer.Listen()
+		defaultServer.Listen(ctx)
 	}
 }
 
