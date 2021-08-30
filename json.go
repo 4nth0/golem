@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -42,7 +43,7 @@ func (s *stringSlice) Set(value string) error {
 	return nil
 }
 
-func jsonCmd() command.Command {
+func jsonCmd(ctx context.Context) command.Command {
 	fs := flag.NewFlagSet("golem json", flag.ExitOnError)
 
 	opts := &JsonOpts{}
@@ -55,11 +56,11 @@ func jsonCmd() command.Command {
 
 	return command.Command{fs, func(args []string) error {
 		fs.Parse(args)
-		return Json(opts)
+		return Json(ctx, opts)
 	}}
 }
 
-func Json(opts *JsonOpts) (err error) {
+func Json(ctx context.Context, opts *JsonOpts) (err error) {
 
 	if len(opts.entities) == 0 && len(opts.templates) == 0 {
 		return errors.New("No entity provided, Please, use at least one entity.")
@@ -68,7 +69,7 @@ func Json(opts *JsonOpts) (err error) {
 	defaultServer := server.NewServer(opts.port, nil)
 
 	for _, entity := range opts.entities {
-		go initializeEntity(entity, opts, defaultServer)
+		go initializeEntity(ctx, entity, opts, defaultServer)
 	}
 
 	for _, template := range opts.templates {
@@ -77,13 +78,13 @@ func Json(opts *JsonOpts) (err error) {
 			if err != nil {
 				fmt.Println("Err: ", err)
 			}
-			initializeEntity(template, opts, defaultServer)
+			initializeEntity(ctx, template, opts, defaultServer)
 		}
 	}
 
 	fmt.Printf("\nJSON Server has been successfully started and listen on port %s.\n", DefaultPort)
 
-	defaultServer.Listen()
+	defaultServer.Listen(ctx)
 
 	return nil
 }
@@ -112,7 +113,7 @@ func pullTemplate(entity, path string) error {
 	return err
 }
 
-func initializeEntity(entity string, opts *JsonOpts, defaultServer *server.Client) {
+func initializeEntity(ctx context.Context, entity string, opts *JsonOpts, defaultServer *server.Client) {
 	entities := map[string]jsonServerService.Entity{
 		entity: jsonServerService.Entity{
 			DBFile: DatabasePath + "/" + entity + ".db.json",
@@ -127,7 +128,7 @@ func initializeEntity(entity string, opts *JsonOpts, defaultServer *server.Clien
 		},
 	}
 
-	go jsonServerService.LaunchService(defaultServer, "", service.JSONDBConfig, nil)
+	go jsonServerService.LaunchService(ctx, defaultServer, "", service.JSONDBConfig, nil)
 	printServiceDetails(entity)
 }
 

@@ -29,23 +29,25 @@ type Config struct {
 	Services []Service         `yaml:"services"`
 }
 
+const FileMode = 0644
+
 // LoadConfig load configuration yaml file content from the specified path
-func LoadConfig(path string) *Config {
+func LoadConfig(path string) (*Config, error) {
 	t := Config{
 		path: path,
 	}
 
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		fmt.Println("Err: ", err)
+		return nil, err
 	}
 
 	err = yaml.Unmarshal(data, &t)
 	if err != nil {
-		fmt.Println("error: %v", err)
+		return nil, err
 	}
 
-	return &t
+	return &t, nil
 }
 
 func InitConfig(path string) *Config {
@@ -63,9 +65,8 @@ func (c *Config) SetPort(port string) *Config {
 }
 
 func (c Config) Save() error {
-
 	b, _ := yaml.Marshal(c)
-	err := ioutil.WriteFile(c.path, b, 0644)
+	err := ioutil.WriteFile(c.path, b, FileMode)
 	if err != nil {
 		fmt.Println("Err: ", err)
 	}
