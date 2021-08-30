@@ -33,6 +33,12 @@ func main() {
 	fs.Parse(os.Args[1:])
 	args := fs.Args()
 
+	if len(args) == 0 {
+		help()
+		log.Print("No argument provided")
+		return
+	}
+
 	if cmd, ok := commands[args[0]]; !ok {
 		log.Fatalf("Unknown command: %s", args[0])
 	} else if err := cmd.Handler(args[1:]); err != nil {
