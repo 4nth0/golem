@@ -10,11 +10,14 @@ import (
 func helpCmd() command.Command {
 	fs := flag.NewFlagSet("golem json", flag.ExitOnError)
 
-	return command.Command{fs, func(args []string) error {
-		fs.Parse(args)
-		help()
-		return nil
-	}}
+	return command.Command{
+		FlagSet: fs,
+		Handler: func(args []string) error {
+			fs.Parse(args)
+			help()
+			return nil
+		},
+	}
 }
 
 func help() {
