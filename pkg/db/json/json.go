@@ -26,6 +26,11 @@ type Entity struct {
 	DBFile string `yaml:"db_file"`
 }
 
+const (
+	ContentTypeJSON = "application/json"
+	ParamIndexKey   = "index"
+)
+
 func LaunchService(defaultServer *server.Client, port string, config JSONDBConfig, requests chan server.InboundRequest) {
 	var s *server.Client
 
@@ -51,14 +56,14 @@ func startNewDatabaseServer(key string, entity Entity, sync bool, r *router.Rout
 	db := loadDatabaseFromFile(entity.DBFile, sync)
 
 	path := "/" + key
-	detailsPath := path + "/:index"
+	detailsPath := path + "/:" + ParamIndexKey
 
 	w := new(tabwriter.Writer)
 	w.Init(os.Stdout, 16, 8, 0, '\t', 0)
 	defer w.Flush()
 
 	r.Get(path, func(w http.ResponseWriter, r *http.Request, params map[string]string) {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Type", ContentTypeJSON)
 
 		list, err := json.Marshal(db.List())
 		if err != nil {
@@ -69,9 +74,9 @@ func startNewDatabaseServer(key string, entity Entity, sync bool, r *router.Rout
 	})
 
 	r.Get(detailsPath, func(w http.ResponseWriter, r *http.Request, params map[string]string) {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Content-Type", ContentTypeJSON)
 
-		index, _ := strconv.Atoi(params["index"])
+		index, _ := strconv.Atoi(params[ParamIndexKey])
 		entry, err := db.GetByIndex(index)
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
@@ -123,5 +128,3 @@ func loadDatabaseFromFile(path string, sync bool) *store.Database {
 
 	return db
 }
-
-// Auto Generate ID

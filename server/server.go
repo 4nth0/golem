@@ -46,18 +46,15 @@ func (s *Client) Listen() {
 				"headers": req.Header,
 				"cookies": req.Cookies(),
 			}).Info("New inbound request.")
+
+		s.broadcastInboundRequest(req)
+
 		handler, params, err := s.Router.GetHandler(req.URL.Path, req.Method)
 		if err != nil {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
 		if handler != nil {
-			if s.InboundRequests != nil {
-				s.InboundRequests <- InboundRequest{
-					URL:    req.URL,
-					Method: req.Method,
-				}
-			}
 			handler(w, req, params)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
@@ -71,5 +68,14 @@ func (s *Client) Listen() {
 				"err":  err,
 				"port": s.Port,
 			}).Error("Unable to start server listening.")
+	}
+}
+
+func (s *Client) broadcastInboundRequest(req *http.Request) {
+	if s.InboundRequests != nil {
+		s.InboundRequests <- InboundRequest{
+			URL:    req.URL,
+			Method: req.Method,
+		}
 	}
 }

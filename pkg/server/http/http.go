@@ -33,7 +33,7 @@ type ServerConfig struct {
 
 var (
 	DefaultMethod     string = "GET"
-	DefaultStatusCode int    = 200
+	DefaultStatusCode int    = http.StatusOK
 )
 
 // LaunchService
@@ -55,7 +55,6 @@ func LaunchService(defaultServer *server.Client, port string, globalVars map[str
 
 	log.Info("Start routes injection")
 	for path, route := range config.Routes {
-
 		if len(route.Methods) > 0 {
 			for method, route := range route.Methods {
 				route.Method = method
@@ -72,7 +71,6 @@ func LaunchService(defaultServer *server.Client, port string, globalVars map[str
 }
 
 func launch(path string, route HTTPHandler, globalVars map[string]string, s *server.Client) {
-
 	if route.Code == 0 {
 		log.WithFields(
 			log.Fields{
