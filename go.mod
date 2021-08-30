@@ -3,6 +3,7 @@ module github.com/4nth0/golem
 go 1.13
 
 require (
+	github.com/goccy/go-json v0.7.7
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
