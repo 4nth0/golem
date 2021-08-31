@@ -1,8 +1,10 @@
 package fs
 
 import (
+	"encoding/json"
 	"log"
 	"os"
+	"time"
 )
 
 type FSClient struct {
@@ -23,11 +25,29 @@ func NewClient(dest string) *FSClient {
 	}
 }
 
-func (f FSClient) WriteLine(line string) error {
-	_, err := f.file.WriteString(line + "\n")
+func (f FSClient) WriteLine(entry string) error {
+	line := NewLine(entry)
+	_, err := f.file.WriteString(line.String())
 	return err
 }
 
 func (f FSClient) Close() {
 	f.file.Close()
+}
+
+type Line struct {
+	CreatedAt time.Time `json:"created_at"`
+	Entry     string    `json:"entry"`
+}
+
+func NewLine(entry string) Line {
+	return Line{
+		Entry:     entry,
+		CreatedAt: time.Now(),
+	}
+}
+
+func (l Line) String() string {
+	b, _ := json.Marshal(l)
+	return string(b) + "\n"
 }

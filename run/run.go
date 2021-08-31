@@ -29,7 +29,7 @@ func RunCmd(ctx context.Context, configPath string) command.Command {
 
 	fs.BoolVar(&opts.CollectStats, "stats", false, "Collect traffic stats")
 	fs.StringVar(&opts.StatsDestination, "stats-dest", "./stats.log", "Collected traffic destination")
-	fs.StringVar(&opts.StatsDriver, "stats-driver", "file", "Collected traffic destination")
+	fs.StringVar(&opts.StatsDriver, "stats-driver", "fs", "Collected traffic destination")
 
 	return command.Command{
 		FlagSet: fs,
