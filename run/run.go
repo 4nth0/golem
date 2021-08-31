@@ -3,19 +3,21 @@ package run
 import (
 	"context"
 	"flag"
-	"fmt"
 
 	"github.com/4nth0/golem/internal/command"
 	"github.com/4nth0/golem/internal/config"
 	"github.com/4nth0/golem/internal/services"
+	"github.com/4nth0/golem/pkg/stats"
 	"github.com/4nth0/golem/server"
 
 	log "github.com/sirupsen/logrus"
 )
 
 type RunOpts struct {
-	ConfigFile   string
-	CollectStats bool
+	ConfigFile       string
+	CollectStats     bool
+	StatsDestination string
+	StatsDriver      string
 }
 
 func RunCmd(ctx context.Context, configPath string) command.Command {
@@ -24,7 +26,10 @@ func RunCmd(ctx context.Context, configPath string) command.Command {
 	opts := &RunOpts{}
 
 	fs.StringVar(&opts.ConfigFile, "config", configPath, "Config File")
+
 	fs.BoolVar(&opts.CollectStats, "stats", false, "Collect traffic stats")
+	fs.StringVar(&opts.StatsDestination, "stats-dest", "./stats.log", "Collected traffic destination")
+	fs.StringVar(&opts.StatsDriver, "stats-driver", "fs", "Collected traffic destination")
 
 	return command.Command{
 		FlagSet: fs,
@@ -47,18 +52,12 @@ func Run(ctx context.Context, opts *RunOpts, requests chan server.InboundRequest
 		if requests == nil {
 			requests = make(chan server.InboundRequest)
 		}
-		go func() {
-			for {
-				select {
-				case <-ctx.Done():
-					close(requests)
-					return
-				case request := <-requests:
-					fmt.Println("request: ", request)
+		col, err := stats.NewCollector(opts.StatsDriver, opts.StatsDestination)
+		if err != nil {
+			return err
+		}
 
-				}
-			}
-		}()
+		go col.Collect(ctx, requests)
 	}
 
 	log.Info("Initialize new default server. ", cfg.Port)

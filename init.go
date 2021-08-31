@@ -12,10 +12,6 @@ import (
 	httpService "github.com/4nth0/golem/pkg/server/http"
 )
 
-type initOpts struct {
-	configFile string
-}
-
 var successMessage string = `
 
 The configuration has successfully initialized.
@@ -31,10 +27,13 @@ Configured port: %s
 func initCmd() command.Command {
 	fs := flag.NewFlagSet("golem init", flag.ExitOnError)
 
-	return command.Command{fs, func(args []string) error {
-		fs.Parse(args)
-		return InitGolem()
-	}}
+	return command.Command{
+		FlagSet: fs,
+		Handler: func(args []string) error {
+			fs.Parse(args)
+			return InitGolem()
+		},
+	}
 }
 
 func InitGolem() (err error) {
@@ -47,11 +46,11 @@ func InitGolem() (err error) {
 	cfg.SetPort(port)
 
 	cfg.Services = []config.Service{
-		config.Service{
+		{
 			Name: "Ping",
 			HTTPConfig: httpService.ServerConfig{
 				Routes: map[string]httpService.HTTPHandler{
-					"/ping": httpService.HTTPHandler{
+					"/ping": {
 						Body: "pong!!",
 					},
 				},
