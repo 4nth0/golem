@@ -3,12 +3,10 @@ package run
 import (
 	"context"
 	"flag"
-	"fmt"
 
 	"github.com/4nth0/golem/internal/command"
 	"github.com/4nth0/golem/internal/config"
 	"github.com/4nth0/golem/internal/services"
-	fsStats "github.com/4nth0/golem/internal/stats/fs"
 	"github.com/4nth0/golem/pkg/stats"
 	"github.com/4nth0/golem/server"
 
@@ -19,6 +17,7 @@ type RunOpts struct {
 	ConfigFile       string
 	CollectStats     bool
 	StatsDestination string
+	StatsDriver      string
 }
 
 func RunCmd(ctx context.Context, configPath string) command.Command {
@@ -30,6 +29,7 @@ func RunCmd(ctx context.Context, configPath string) command.Command {
 
 	fs.BoolVar(&opts.CollectStats, "stats", false, "Collect traffic stats")
 	fs.StringVar(&opts.StatsDestination, "stats-dest", "./stats.log", "Collected traffic destination")
+	fs.StringVar(&opts.StatsDriver, "stats-driver", "file", "Collected traffic destination")
 
 	return command.Command{
 		FlagSet: fs,
@@ -52,8 +52,12 @@ func Run(ctx context.Context, opts *RunOpts, requests chan server.InboundRequest
 		if requests == nil {
 			requests = make(chan server.InboundRequest)
 		}
+		col, err := stats.NewCollector(opts.StatsDriver, opts.StatsDestination)
+		if err != nil {
+			return err
+		}
 
-		go initStatsCollection(ctx, opts, requests)
+		go col.Collect(ctx, requests)
 	}
 
 	log.Info("Initialize new default server. ", cfg.Port)
@@ -70,25 +74,4 @@ func Run(ctx context.Context, opts *RunOpts, requests chan server.InboundRequest
 	}
 
 	return nil
-}
-
-func initStatsCollection(ctx context.Context, opts *RunOpts, requests chan server.InboundRequest) {
-	statsFSClient := fsStats.NewClient(opts.StatsDestination)
-	statsClient := stats.NewClient(statsFSClient)
-
-	defer statsFSClient.Close()
-
-	for {
-		select {
-		case <-ctx.Done():
-			close(requests)
-			return
-		case request := <-requests:
-			fmt.Println("New request ...")
-			err := statsClient.PushRequest(request)
-			if err != nil {
-				log.Error(err)
-			}
-		}
-	}
 }
