@@ -7,31 +7,31 @@ import (
 	"time"
 )
 
-type FSClient struct {
+type Client struct {
 	dest string
 	file *os.File
 }
 
-func NewClient(dest string) *FSClient {
+func NewClient(dest string) *Client {
 	os.Remove(dest)
 	f, err := os.OpenFile(dest, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Println(err)
 	}
 
-	return &FSClient{
+	return &Client{
 		dest: dest,
 		file: f,
 	}
 }
 
-func (f FSClient) WriteLine(entry string) error {
+func (f Client) WriteLine(entry string) error {
 	line := NewLine(entry)
 	_, err := f.file.WriteString(line.String())
 	return err
 }
 
-func (f FSClient) Close() {
+func (f Client) Close() {
 	f.file.Close()
 }
 
