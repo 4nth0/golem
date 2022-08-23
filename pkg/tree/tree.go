@@ -30,9 +30,7 @@ func NewTree() *TreeNode {
 }
 
 func (t *TreeNode) AddNode(path string, method string, handler Handler) {
-	if strings.HasPrefix(path, PathDelimiter) {
-		path = strings.TrimPrefix(path, PathDelimiter)
-	}
+	path = strings.TrimPrefix(path, PathDelimiter)
 	splitted := strings.Split(path, PathDelimiter)
 
 	currentNode := t
@@ -45,7 +43,7 @@ func (t *TreeNode) AddNode(path string, method string, handler Handler) {
 		varName := ""
 
 		if strings.HasPrefix(key, VarPrefix) {
-			varName = strings.TrimPrefix(key, VarPrefix)
+			varName = key[len(VarPrefix):]
 			key = Wildcard
 		}
 
@@ -72,13 +70,11 @@ func (t *TreeNode) AddNode(path string, method string, handler Handler) {
 	}
 }
 
-func (t TreeNode) GetNode(path, method string) (Handler, map[string]string, error) {
-	if strings.HasPrefix(path, PathDelimiter) {
-		path = strings.TrimPrefix(path, PathDelimiter)
-	}
+func (t *TreeNode) GetNode(path, method string) (Handler, map[string]string, error) {
+	path = strings.TrimPrefix(path, PathDelimiter)
 	splitted := strings.Split(path, PathDelimiter)
 	params := map[string]string{}
-	currentNode := &t
+	currentNode := t
 
 	for i := 0; i < len(splitted); i++ {
 		key := splitted[i]
@@ -110,9 +106,7 @@ func (t TreeNode) GetNode(path, method string) (Handler, map[string]string, erro
 }
 
 func (t *TreeNode) RemoveNode(path string) {
-	if strings.HasPrefix(path, PathDelimiter) {
-		path = strings.TrimPrefix(path, PathDelimiter)
-	}
+	path = strings.TrimPrefix(path, PathDelimiter)
 	splitted := strings.Split(path, PathDelimiter)
 
 	currentNode := t
@@ -136,44 +130,6 @@ func (t *TreeNode) RemoveNode(path string) {
 		currentNode = currentNode.Childs[key]
 	}
 }
-
-func (t *TreeNode) Mount(path string, tree *TreeNode) {
-	if strings.HasPrefix(path, PathDelimiter) {
-		path = strings.TrimPrefix(path, PathDelimiter)
-	}
-	splitted := strings.Split(path, PathDelimiter)
-
-	currentNode := t
-
-	for i := 0; i < len(splitted); i++ {
-		key := splitted[i]
-		varName := ""
-
-		if strings.HasPrefix(key, VarPrefix) {
-			varName = strings.TrimPrefix(key, VarPrefix)
-			key = Wildcard
-		}
-
-		if _, ok := currentNode.Childs[key]; !ok {
-			currentNode.Childs[key] = &TreeNode{
-				Handler: nil,
-				Childs:  map[string]*TreeNode{},
-				Parent:  currentNode,
-			}
-		}
-
-		currentNode = currentNode.Childs[key]
-		if varName != "" {
-			currentNode.VarName = varName
-		}
-
-		if i == len(splitted)-1 {
-			currentNode.Childs = tree.Childs
-			return
-		}
-	}
-}
-
 func (t *TreeNode) Dump() string {
 	b, _ := json.MarshalIndent(t, "", "  ")
 	return string(b)

@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/4nth0/golem/pkg/template"
 	"github.com/4nth0/golem/server"
@@ -18,6 +19,7 @@ type HTTPHandler struct {
 	Code     int                    `yaml:"code,omitempty"`
 	Headers  map[string]string      `yaml:"headers,omitempty"`
 	Handler  *Handler               `yaml:"handler,omitempty"` // Should be removed if not used
+	Latency  time.Duration          `yaml:"latency,omitempty"` // Should be removed if not used
 }
 
 // Handler
@@ -132,6 +134,10 @@ func launch(path string, route HTTPHandler, globalVars map[string]string, s *ser
 
 				w.Header().Add(key, value)
 			}
+		}
+
+		if route.Latency > 0 {
+			time.Sleep(route.Latency)
 		}
 
 		w.WriteHeader(route.Code)

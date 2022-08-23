@@ -8,7 +8,7 @@ import (
 	filesServerService "github.com/4nth0/golem/pkg/server/files"
 	httpService "github.com/4nth0/golem/pkg/server/http"
 
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 )
 
 // Service is the Service level configuration struct
