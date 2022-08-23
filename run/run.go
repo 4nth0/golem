@@ -10,6 +10,7 @@ import (
 	"github.com/4nth0/golem/pkg/stats"
 	"github.com/4nth0/golem/server"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -62,6 +63,7 @@ func Run(ctx context.Context, opts *RunOpts, requests chan server.InboundRequest
 
 	log.Info("Initialize new default server. ", cfg.Port)
 	defaultServer := server.NewServer(cfg.Port, requests)
+	defaultServer.Server.Handle("/metrics", promhttp.Handler())
 
 	for _, service := range cfg.Services {
 		func(service config.Service) {
