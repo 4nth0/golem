@@ -20,12 +20,29 @@ var DatabasePath string = BasePath + "/db"
 var ConfigPath string = "./golem.yaml"
 var DefaultPort string = "3000"
 
+func configureLog() {
+	log.SetOutput(os.Stdout)
+
+	logLevel := "info"
+
+	if value, ok := os.LookupEnv("LOG_LEVEL"); ok {
+		logLevel = value
+	}
+
+	logrusLevel, errLogLevel := log.ParseLevel(logLevel)
+
+	if errLogLevel != nil {
+		log.Fatalf("ENV LOG_LEVEL provided is not a viable option, can be either: panic, fatal, error, warn, info, debug, trace")
+	}
+	log.Printf("Set log level to: %s", logLevel)
+	log.SetLevel(logrusLevel)
+}
+
 func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	log.SetOutput(os.Stdout)
-	log.SetLevel(log.TraceLevel)
+	configureLog()
 
 	ctx, cancel := context.WithCancel(context.Background())
 
