@@ -8,8 +8,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/4nth0/golem/internal/command"
-	"github.com/4nth0/golem/run"
+	"github.com/4nth0/golem/command"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -53,11 +52,10 @@ func main() {
 	}()
 
 	commands := map[string]command.Command{
-		"init": initCmd(),
-		"help": helpCmd(),
-		"run":  run.RunCmd(ctx, ConfigPath),
-		"json": jsonCmd(ctx),
-		"add":  addCmd(),
+		"init": command.InitCmd(),
+		"help": command.HelpCmd(),
+		"run":  command.RunCmd(ctx, ConfigPath),
+		"json": command.JsonCmd(ctx),
 	}
 
 	fs := flag.NewFlagSet("golem", flag.ExitOnError)
@@ -65,7 +63,7 @@ func main() {
 	args := fs.Args()
 
 	if len(args) == 0 {
-		help()
+		command.HelpCmd()
 		log.Print("No argument provided")
 		return
 	}
@@ -74,6 +72,6 @@ func main() {
 		log.Fatalf("Unknown command: %s", args[0])
 	} else if err := cmd.Handler(args[1:]); err != nil {
 		fmt.Println(err)
-		help()
+		command.HelpCmd()
 	}
 }

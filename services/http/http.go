@@ -3,8 +3,8 @@ package http
 import (
 	"context"
 	"net/http"
+	"time"
 
-	"github.com/4nth0/golem/pkg/template"
 	"github.com/4nth0/golem/server"
 	log "github.com/sirupsen/logrus"
 )
@@ -18,6 +18,7 @@ type HTTPHandler struct {
 	Code     int                    `yaml:"code,omitempty"`
 	Headers  map[string]string      `yaml:"headers,omitempty"`
 	Handler  *Handler               `yaml:"handler,omitempty"` // Should be removed if not used
+	Latency  time.Duration          `yaml:"latency,omitempty"` // Should be removed if not used
 }
 
 // Handler
@@ -95,7 +96,7 @@ func launch(path string, route HTTPHandler, globalVars map[string]string, s *ser
 				"path": route.BodyFile,
 			}).Debug("Use body template file.")
 
-		result, err := template.LoadTemplate(route.BodyFile)
+		result, err := LoadTemplate(route.BodyFile)
 		if err != nil {
 			log.WithFields(
 				log.Fields{
@@ -134,9 +135,13 @@ func launch(path string, route HTTPHandler, globalVars map[string]string, s *ser
 			}
 		}
 
+		if route.Latency > 0 {
+			time.Sleep(route.Latency)
+		}
+
 		w.WriteHeader(route.Code)
 
-		response := template.ExecuteTemplate(route.Body, globalVars, params)
+		response := ExecuteTemplate(route.Body, globalVars, params)
 		w.Write([]byte(response))
 
 	})

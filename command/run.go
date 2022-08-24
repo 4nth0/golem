@@ -1,15 +1,19 @@
-package run
+package command
 
 import (
 	"context"
 	"flag"
 
-	"github.com/4nth0/golem/internal/command"
-	"github.com/4nth0/golem/internal/config"
-	"github.com/4nth0/golem/internal/services"
-	"github.com/4nth0/golem/pkg/stats"
+	"github.com/4nth0/golem/config"
 	"github.com/4nth0/golem/server"
+	"github.com/4nth0/golem/services"
+	"github.com/4nth0/golem/stats"
 
+	"net/http"
+	"net/http/pprof"
+	_ "net/http/pprof"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -18,9 +22,10 @@ type RunOpts struct {
 	CollectStats     bool
 	StatsDestination string
 	StatsDriver      string
+	Debug            bool
 }
 
-func RunCmd(ctx context.Context, configPath string) command.Command {
+func RunCmd(ctx context.Context, configPath string) Command {
 	fs := flag.NewFlagSet("golem run", flag.ExitOnError)
 
 	opts := &RunOpts{}
@@ -31,7 +36,7 @@ func RunCmd(ctx context.Context, configPath string) command.Command {
 	fs.StringVar(&opts.StatsDestination, "stats-dest", "./stats.log", "Collected traffic destination")
 	fs.StringVar(&opts.StatsDriver, "stats-driver", "fs", "Collected traffic destination")
 
-	return command.Command{
+	return Command{
 		FlagSet: fs,
 		Handler: func(args []string) error {
 			fs.Parse(args)
@@ -62,6 +67,14 @@ func Run(ctx context.Context, opts *RunOpts, requests chan server.InboundRequest
 
 	log.Info("Initialize new default server. ", cfg.Port)
 	defaultServer := server.NewServer(cfg.Port, requests)
+	defaultServer.Server.Handle("/metrics", promhttp.Handler())
+
+	defaultServer.Server.Handle("/debug/pprof/", http.HandlerFunc(pprof.Index))
+	defaultServer.Server.Handle("/debug/pprof/cmdline", http.HandlerFunc(pprof.Cmdline))
+	defaultServer.Server.Handle("/debug/pprof/profile", http.HandlerFunc(pprof.Profile))
+	defaultServer.Server.Handle("/debug/pprof/symbol", http.HandlerFunc(pprof.Symbol))
+	defaultServer.Server.Handle("/debug/pprof/trace", http.HandlerFunc(pprof.Trace))
+	defaultServer.Server.Handle("/debug/pprof/{cmd}", http.HandlerFunc(pprof.Index))
 
 	for _, service := range cfg.Services {
 		func(service config.Service) {

@@ -1,16 +1,14 @@
-package main
+package command
 
 import (
 	"flag"
 	"fmt"
-
-	"github.com/4nth0/golem/internal/command"
 )
 
-func helpCmd() command.Command {
+func HelpCmd() Command {
 	fs := flag.NewFlagSet("golem json", flag.ExitOnError)
 
-	return command.Command{
+	return Command{
 		FlagSet: fs,
 		Handler: func(args []string) error {
 			fs.Parse(args)
