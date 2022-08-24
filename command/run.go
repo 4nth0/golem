@@ -1,14 +1,13 @@
-package run
+package command
 
 import (
 	"context"
 	"flag"
 
-	"github.com/4nth0/golem/internal/command"
-	"github.com/4nth0/golem/internal/config"
-	"github.com/4nth0/golem/internal/services"
-	"github.com/4nth0/golem/pkg/stats"
+	"github.com/4nth0/golem/config"
 	"github.com/4nth0/golem/server"
+	"github.com/4nth0/golem/services"
+	"github.com/4nth0/golem/stats"
 
 	"net/http"
 	"net/http/pprof"
@@ -23,9 +22,10 @@ type RunOpts struct {
 	CollectStats     bool
 	StatsDestination string
 	StatsDriver      string
+	Debug            bool
 }
 
-func RunCmd(ctx context.Context, configPath string) command.Command {
+func RunCmd(ctx context.Context, configPath string) Command {
 	fs := flag.NewFlagSet("golem run", flag.ExitOnError)
 
 	opts := &RunOpts{}
@@ -36,7 +36,7 @@ func RunCmd(ctx context.Context, configPath string) command.Command {
 	fs.StringVar(&opts.StatsDestination, "stats-dest", "./stats.log", "Collected traffic destination")
 	fs.StringVar(&opts.StatsDriver, "stats-driver", "fs", "Collected traffic destination")
 
-	return command.Command{
+	return Command{
 		FlagSet: fs,
 		Handler: func(args []string) error {
 			fs.Parse(args)

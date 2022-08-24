@@ -1,4 +1,4 @@
-package main
+package command
 
 import (
 	"bufio"
@@ -7,9 +7,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/4nth0/golem/internal/command"
-	"github.com/4nth0/golem/internal/config"
-	httpService "github.com/4nth0/golem/pkg/server/http"
+	"github.com/4nth0/golem/config"
+	httpService "github.com/4nth0/golem/services/http"
 )
 
 var successMessage string = `
@@ -24,10 +23,10 @@ Configured port: %s
 // This command create a new configuration file
 // golem init
 
-func initCmd() command.Command {
+func InitCmd() Command {
 	fs := flag.NewFlagSet("golem init", flag.ExitOnError)
 
-	return command.Command{
+	return Command{
 		FlagSet: fs,
 		Handler: func(args []string) error {
 			fs.Parse(args)

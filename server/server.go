@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/4nth0/golem/pkg/router"
+	"github.com/4nth0/golem/router"
 	log "github.com/sirupsen/logrus"
 )
 

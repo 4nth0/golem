@@ -1,4 +1,4 @@
-package template
+package http
 
 import (
 	"io/ioutil"

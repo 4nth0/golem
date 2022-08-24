@@ -3,11 +3,11 @@ package services
 import (
 	"context"
 
-	"github.com/4nth0/golem/internal/config"
-	jsonServerService "github.com/4nth0/golem/pkg/db/json"
-	filesServerService "github.com/4nth0/golem/pkg/server/files"
-	httpService "github.com/4nth0/golem/pkg/server/http"
+	"github.com/4nth0/golem/config"
 	"github.com/4nth0/golem/server"
+	filesServerService "github.com/4nth0/golem/services/files"
+	httpService "github.com/4nth0/golem/services/http"
+	jsonServerService "github.com/4nth0/golem/services/json"
 )
 
 // Launch a new service

@@ -1,4 +1,4 @@
-package main
+package command
 
 import (
 	"context"
@@ -10,14 +10,20 @@ import (
 	"os"
 	"text/tabwriter"
 
-	"github.com/4nth0/golem/internal/command"
-	"github.com/4nth0/golem/internal/config"
-	jsonServerService "github.com/4nth0/golem/pkg/db/json"
+	"github.com/4nth0/golem/config"
 	"github.com/4nth0/golem/server"
+	jsonServerService "github.com/4nth0/golem/services/json"
 	log "github.com/sirupsen/logrus"
 )
 
 var RemoteTemplateAddress = "https://raw.githubusercontent.com/4nth0/golem-sample/master/db"
+
+var Version string
+var BasePath string = "./.golem"
+var TemplatePath string = BasePath + "/templates"
+var DatabasePath string = BasePath + "/db"
+var ConfigPath string = "./golem.yaml"
+var DefaultPort string = "3000"
 
 var DBTemplates = map[string]string{
 	"users": RemoteTemplateAddress + "/users/db.json",
@@ -43,7 +49,7 @@ func (s *stringSlice) Set(value string) error {
 	return nil
 }
 
-func jsonCmd(ctx context.Context) command.Command {
+func JsonCmd(ctx context.Context) Command {
 	fs := flag.NewFlagSet("golem json", flag.ExitOnError)
 
 	opts := &JsonOpts{}
@@ -54,7 +60,7 @@ func jsonCmd(ctx context.Context) command.Command {
 	fs.Var(&opts.templates, "template", "Template name")
 	fs.BoolVar(&opts.sync, "sync", true, "FS Sync")
 
-	return command.Command{
+	return Command{
 		FlagSet: fs,
 		Handler: func(args []string) error {
 			fs.Parse(args)

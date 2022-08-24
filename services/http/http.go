@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/4nth0/golem/pkg/template"
 	"github.com/4nth0/golem/server"
 	log "github.com/sirupsen/logrus"
 )
@@ -97,7 +96,7 @@ func launch(path string, route HTTPHandler, globalVars map[string]string, s *ser
 				"path": route.BodyFile,
 			}).Debug("Use body template file.")
 
-		result, err := template.LoadTemplate(route.BodyFile)
+		result, err := LoadTemplate(route.BodyFile)
 		if err != nil {
 			log.WithFields(
 				log.Fields{
@@ -142,7 +141,7 @@ func launch(path string, route HTTPHandler, globalVars map[string]string, s *ser
 
 		w.WriteHeader(route.Code)
 
-		response := template.ExecuteTemplate(route.Body, globalVars, params)
+		response := ExecuteTemplate(route.Body, globalVars, params)
 		w.Write([]byte(response))
 
 	})
