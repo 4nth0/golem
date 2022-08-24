@@ -56,7 +56,6 @@ func main() {
 		"help": command.HelpCmd(),
 		"run":  command.RunCmd(ctx, ConfigPath),
 		"json": command.JsonCmd(ctx),
-		"add":  command.AddCmd(),
 	}
 
 	fs := flag.NewFlagSet("golem", flag.ExitOnError)
