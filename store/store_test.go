@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	usersGoldenPath = "../../test/users.db.golden.json"
+	usersGoldenPath = "../test/users.db.golden.json"
 	usersLentgh     = 8
 )
 

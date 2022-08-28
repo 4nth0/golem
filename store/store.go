@@ -33,7 +33,7 @@ func New(path string, sync bool) *Database {
 	return &db
 }
 
-func (db Database) List() Entries {
+func (db *Database) List() Entries {
 	return db.Entries
 }
 
@@ -75,7 +75,7 @@ func (db *Database) Save() {
 	}
 }
 
-func (db Database) GetByIndex(index int) (interface{}, error) {
+func (db *Database) GetByIndex(index int) (interface{}, error) {
 	if index >= db.length || index < 0 {
 		return nil, errors.New("NOT_FOUND")
 	}
