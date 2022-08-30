@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"math/rand"
 	"net/http"
 	"time"
 
@@ -11,14 +12,16 @@ import (
 
 // HTTPHandler
 type HTTPHandler struct {
-	Method   string                 `yaml:"method,omitempty"`
-	Methods  map[string]HTTPHandler `yaml:"methods,omitempty"`
-	Body     string                 `yaml:"body,omitempty"`
-	BodyFile string                 `yaml:"body_file,omitempty"`
-	Code     int                    `yaml:"code,omitempty"`
-	Headers  map[string]string      `yaml:"headers,omitempty"`
-	Handler  *Handler               `yaml:"handler,omitempty"` // Should be removed if not used
-	Latency  time.Duration          `yaml:"latency,omitempty"` // Should be removed if not used
+	Method    string                 `yaml:"method,omitempty"`
+	Methods   map[string]HTTPHandler `yaml:"methods,omitempty"`
+	Body      string                 `yaml:"body,omitempty"`
+	Bodies    []string               `yaml:"bodies,omitempty"`
+	BodyFile  string                 `yaml:"body_file,omitempty"`
+	BodyFiles []string               `yaml:"body_files,omitempty"`
+	Code      int                    `yaml:"code,omitempty"`
+	Headers   map[string]string      `yaml:"headers,omitempty"`
+	Handler   *Handler               `yaml:"handler,omitempty"` // Should be removed if not used
+	Latency   time.Duration          `yaml:"latency,omitempty"` // Should be removed if not used
 }
 
 // Handler
@@ -73,6 +76,39 @@ func LaunchService(ctx context.Context, defaultServer *server.Client, port strin
 }
 
 func launch(path string, route HTTPHandler, globalVars map[string]string, s *server.Client) {
+
+	route = normalizeRouteConfiguration(route)
+
+	log.WithFields(
+		log.Fields{
+			"method": route.Method,
+			"path":   path,
+		}).Info("Adding new route")
+
+	s.Router.Add(route.Method, path, func(w http.ResponseWriter, r *http.Request, params map[string]string) {
+		log.WithFields(
+			log.Fields{
+				"method": route.Method,
+				"path":   path,
+				"status": route.Code,
+			}).Info("New inbound request.")
+
+		if len(route.Headers) > 0 {
+			for key, value := range route.Headers {
+				w.Header().Add(key, value)
+			}
+		}
+		if route.Latency > 0 {
+			time.Sleep(route.Latency)
+		}
+
+		w.WriteHeader(route.Code)
+		w.Write([]byte(generateBodyResponse(route, globalVars, params)))
+
+	})
+}
+
+func normalizeRouteConfiguration(route HTTPHandler) HTTPHandler {
 	if route.Code == 0 {
 		log.WithFields(
 			log.Fields{
@@ -90,7 +126,7 @@ func launch(path string, route HTTPHandler, globalVars map[string]string, s *ser
 		route.Method = DefaultMethod
 	}
 
-	if route.Body == "" && route.BodyFile != "" {
+	if route.BodyFile != "" {
 		log.WithFields(
 			log.Fields{
 				"path": route.BodyFile,
@@ -101,54 +137,42 @@ func launch(path string, route HTTPHandler, globalVars map[string]string, s *ser
 			log.WithFields(
 				log.Fields{
 					"path": route.BodyFile,
-				}).Info("Adding new route")
+				}).Error("Unable to load template file")
 		} else {
 			route.Body = result
 		}
 	}
 
-	log.WithFields(
-		log.Fields{
-			"method": route.Method,
-			"path":   path,
-		}).Info("Adding new route")
-
-	s.Router.Add(route.Method, path, func(w http.ResponseWriter, r *http.Request, params map[string]string) {
-
+	if len(route.BodyFiles) > 0 {
 		log.WithFields(
 			log.Fields{
-				"method": route.Method,
-				"path":   path,
-				"status": route.Code,
-			}).Info("New inbound request.")
+				"paths": route.BodyFiles,
+			}).Debug("Use body template file.")
 
-		if len(route.Headers) > 0 {
-			for key, value := range route.Headers {
-
+		for _, path := range route.BodyFiles {
+			result, err := LoadTemplate(path)
+			if err != nil {
 				log.WithFields(
 					log.Fields{
-						"key":   key,
-						"value": value,
-					}).Info("Inject response header.")
-
-				w.Header().Add(key, value)
+						"path": path,
+					}).Error("Unable to load template file")
+			} else {
+				route.Bodies = append(route.Bodies, result)
 			}
 		}
+	}
 
-		if route.Latency > 0 {
-			time.Sleep(route.Latency)
-		}
+	return route
+}
 
-		w.WriteHeader(route.Code)
+func generateBodyResponse(route HTTPHandler, globalVars map[string]string, params map[string]string) string {
+	var body string
 
-		response := ExecuteTemplate(route.Body, globalVars, params)
-		_, err := w.Write([]byte(response))
-		if err != nil {
-			log.WithFields(
-				log.Fields{
-					"err": err,
-				}).Error("Unable to write response.")
-		}
+	if len(route.Bodies) > 0 {
+		body = route.Bodies[rand.Intn(len(route.Bodies))]
+	} else {
+		body = route.Body
+	}
 
-	})
+	return ExecuteTemplate(body, globalVars, params)
 }
