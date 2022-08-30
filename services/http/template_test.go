@@ -31,10 +31,11 @@ Donec euismod tellus vel sem vulputate blastoise.
 Suspendisse feugiat quam quis sagittis fringilla.
 Nullam dictum vehicula libero nec blastoise.
 Sed suscipit vitae justo vel porttitor.`
-	placeholder_1      = "bulbasaur"
-	placeholder_2      = "charmander"
-	placeholder_3      = "blastoise"
-	templateGoldenPath = "../../test/lorem.golden.tpl"
+	placeholder_1       = "bulbasaur"
+	placeholder_2       = "charmander"
+	placeholder_3       = "blastoise"
+	templateGoldenPath  = "../../test/lorem.golden.tpl"
+	templateGoldenPath2 = "../../test/ipsum.golden.tpl"
 )
 
 func Test_Load(t *testing.T) {
