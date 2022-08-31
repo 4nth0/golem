@@ -56,6 +56,17 @@ func InitGolem() (err error) {
 					"/ping": {
 						Body: "pong!!",
 					},
+					"/multiple-bodies": {
+						Bodies: []string{
+							"“People don’t just disappear, Dean. Other people just stop looking for them.” — Sam Winchester",
+							"“The internet is more than just naked people. You do know that?” — Sam Winchester",
+							"“I’ll interrogate the cat.” — Castiel",
+							"“If you’re gonna make an omelet, sometimes you have to break some spines.” — Crowley",
+						},
+					},
+					"/user/:id": {
+						Body: "Hi User N°${params.id}!",
+					},
 				},
 			},
 		},
