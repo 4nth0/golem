@@ -1,6 +1,7 @@
 package http
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -36,6 +37,7 @@ Sed suscipit vitae justo vel porttitor.`
 
 func Test_Load(t *testing.T) {
 	template, err := LoadTemplate(templateGoldenPath)
+	template = strings.Replace(template, "\r", "", -1)
 
 	assert.Nil(t, err)
 	assert.Equal(t, expectedTemplate, template)
@@ -49,6 +51,7 @@ func Test_Load(t *testing.T) {
 func Test_ExecuteTemplate(t *testing.T) {
 	template, err := LoadTemplate(templateGoldenPath)
 	assert.Nil(t, err)
+	template = strings.Replace(template, "\r", "", -1)
 
 	global := map[string]string{
 		"placeholder_1": "bulbasaur",
