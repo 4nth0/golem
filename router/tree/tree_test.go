@@ -50,7 +50,7 @@ func TestGetNode(t *testing.T) {
 	assert.Nil(t, handler)
 	assert.Nil(t, params)
 
-	handler, params, err := tree.GetNode("/path/to/heaven", "POST")
+	_, _, err := tree.GetNode("/path/to/heaven", "POST")
 	assert.NotNil(t, err)
 
 }

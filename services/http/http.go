@@ -142,7 +142,13 @@ func launch(path string, route HTTPHandler, globalVars map[string]string, s *ser
 		w.WriteHeader(route.Code)
 
 		response := ExecuteTemplate(route.Body, globalVars, params)
-		w.Write([]byte(response))
+		_, err := w.Write([]byte(response))
+		if err != nil {
+			log.WithFields(
+				log.Fields{
+					"err": err,
+				}).Error("Unable to write response.")
+		}
 
 	})
 }

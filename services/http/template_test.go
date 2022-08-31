@@ -1,6 +1,7 @@
 package http
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -31,14 +32,12 @@ Donec euismod tellus vel sem vulputate blastoise.
 Suspendisse feugiat quam quis sagittis fringilla.
 Nullam dictum vehicula libero nec blastoise.
 Sed suscipit vitae justo vel porttitor.`
-	placeholder_1      = "bulbasaur"
-	placeholder_2      = "charmander"
-	placeholder_3      = "blastoise"
 	templateGoldenPath = "../../test/lorem.golden.tpl"
 )
 
 func Test_Load(t *testing.T) {
 	template, err := LoadTemplate(templateGoldenPath)
+	template = strings.Replace(template, "\r", "", -1)
 
 	assert.Nil(t, err)
 	assert.Equal(t, expectedTemplate, template)
@@ -52,6 +51,7 @@ func Test_Load(t *testing.T) {
 func Test_ExecuteTemplate(t *testing.T) {
 	template, err := LoadTemplate(templateGoldenPath)
 	assert.Nil(t, err)
+	template = strings.Replace(template, "\r", "", -1)
 
 	global := map[string]string{
 		"placeholder_1": "bulbasaur",

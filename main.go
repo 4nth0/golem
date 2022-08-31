@@ -59,7 +59,10 @@ func main() {
 	}
 
 	fs := flag.NewFlagSet("golem", flag.ExitOnError)
-	fs.Parse(os.Args[1:])
+	err := fs.Parse(os.Args[1:])
+	if err != nil {
+		log.Fatalf("Error parsing flags: %s", err)
+	}
 	args := fs.Args()
 
 	if len(args) == 0 {
