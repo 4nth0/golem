@@ -111,9 +111,9 @@ func Test_Save(t *testing.T) {
 	path := usersGoldenPath + ".test-sync"
 	db := New(path, true)
 
-	err := db.Load()
+	db.Load() //nolint:all
 
-	err = db.Push(`{"name": "Jody Mills", "type": "Hunter"}`)
+	err := db.Push(`{"name": "Jody Mills", "type": "Hunter"}`)
 	assert.Nil(t, err)
 
 	err = db.Push(`{"name": "Jody Mills", "type": "Hunter"}`)
