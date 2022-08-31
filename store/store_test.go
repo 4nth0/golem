@@ -112,7 +112,6 @@ func Test_Save(t *testing.T) {
 	db := New(path, true)
 
 	err := db.Load()
-	assert.Nil(t, err)
 
 	err = db.Push(`{"name": "Jody Mills", "type": "Hunter"}`)
 	assert.Nil(t, err)
