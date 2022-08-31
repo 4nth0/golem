@@ -63,7 +63,10 @@ func JsonCmd(ctx context.Context) Command {
 	return Command{
 		FlagSet: fs,
 		Handler: func(args []string) error {
-			fs.Parse(args)
+			err := fs.Parse(args)
+			if err != nil {
+				return err
+			}
 			return Json(ctx, opts)
 		},
 	}

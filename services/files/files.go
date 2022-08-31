@@ -3,6 +3,8 @@ package files
 import (
 	"context"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type FilesServerConfig struct {
@@ -14,5 +16,10 @@ func LaunchService(ctx context.Context, port string, config FilesServerConfig) {
 	fs := http.FileServer(http.Dir(config.Folder))
 	http.Handle("/", fs)
 
-	http.ListenAndServe(":"+port, nil)
+	if err := http.ListenAndServe(":"+port, nil); err != nil && err != http.ErrServerClosed {
+		log.WithFields(
+			log.Fields{
+				"err": err,
+			}).Error("Unable to start server listening.")
+	}
 }

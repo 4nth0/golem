@@ -39,7 +39,10 @@ func RunCmd(ctx context.Context, configPath string) Command {
 	return Command{
 		FlagSet: fs,
 		Handler: func(args []string) error {
-			fs.Parse(args)
+			err := fs.Parse(args)
+			if err != nil {
+				return err
+			}
 			return Run(ctx, opts, nil)
 		},
 	}

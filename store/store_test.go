@@ -49,7 +49,8 @@ func Test_Load(t *testing.T) {
 
 func Test_List(t *testing.T) {
 	db := New(usersGoldenPath, false)
-	db.Load()
+	err := db.Load()
+	assert.Nil(t, err)
 
 	entries := db.List()
 
@@ -58,11 +59,13 @@ func Test_List(t *testing.T) {
 
 func Test_Push(t *testing.T) {
 	db := New(usersGoldenPath, false)
-	db.Load()
+	err := db.Load()
+	assert.Nil(t, err)
 
 	assert.Equal(t, usersLentgh, db.length)
 
-	db.Push(`{"name": "Jody Mills", "type": "Hunter"}`)
+	err = db.Push(`{"name": "Jody Mills", "type": "Hunter"}`)
+	assert.Nil(t, err)
 
 	assert.Equal(t, usersLentgh+1, db.length)
 }
@@ -70,10 +73,11 @@ func Test_Push(t *testing.T) {
 func Test_GetByIndex(t *testing.T) {
 	db := New(usersGoldenPath, false)
 
-	db.Load()
+	err := db.Load()
+	assert.Nil(t, err)
 	entries := db.List()
 	entry, _ := db.GetByIndex(3)
-	_, err := db.GetByIndex(30)
+	_, err = db.GetByIndex(30)
 
 	assert.Equal(t, entries[3], entry)
 	assert.NotNil(t, err)
@@ -82,13 +86,15 @@ func Test_GetByIndex(t *testing.T) {
 func Test_DeleteFromIndex(t *testing.T) {
 	db := New(usersGoldenPath, false)
 
-	db.Load()
+	err := db.Load()
+	assert.Nil(t, err)
 
 	toBeDeleted, _ := db.GetByIndex(3)
 
 	assert.Equal(t, usersLentgh, db.length)
 
-	db.DeleteFromIndex(3)
+	err = db.DeleteFromIndex(3)
+	assert.Nil(t, err)
 
 	entry, _ := db.GetByIndex(3)
 	entries := db.List()
@@ -97,7 +103,7 @@ func Test_DeleteFromIndex(t *testing.T) {
 	assert.Len(t, entries, usersLentgh-1)
 	assert.NotEqual(t, entry, toBeDeleted)
 
-	err := db.DeleteFromIndex(30)
+	err = db.DeleteFromIndex(30)
 	assert.NotNil(t, err)
 }
 
@@ -105,16 +111,24 @@ func Test_Save(t *testing.T) {
 	path := usersGoldenPath + ".test-sync"
 	db := New(path, true)
 
-	db.Load()
+	err := db.Load()
+	assert.Nil(t, err)
 
-	db.Push(`{"name": "Jody Mills", "type": "Hunter"}`)
-	db.Push(`{"name": "Jody Mills", "type": "Hunter"}`)
-	db.Push(`{"name": "Jody Mills", "type": "Hunter"}`)
+	err = db.Push(`{"name": "Jody Mills", "type": "Hunter"}`)
+	assert.Nil(t, err)
 
-	db.DeleteFromIndex(1)
+	err = db.Push(`{"name": "Jody Mills", "type": "Hunter"}`)
+	assert.Nil(t, err)
+
+	err = db.Push(`{"name": "Jody Mills", "type": "Hunter"}`)
+	assert.Nil(t, err)
+
+	err = db.DeleteFromIndex(1)
+	assert.Nil(t, err)
 
 	db2 := New(path, true)
-	db2.Load()
+	err = db2.Load()
+	assert.Nil(t, err)
 
 	assert.Equal(t, 2, db2.length)
 

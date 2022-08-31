@@ -12,6 +12,8 @@ import (
 	"github.com/4nth0/golem/router"
 	"github.com/4nth0/golem/server"
 	"github.com/4nth0/golem/store"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var empty []byte = []byte("{}")
@@ -71,7 +73,13 @@ func startNewDatabaseServer(key string, entity Entity, sync bool, r *router.Rout
 			fmt.Println("Err: ", err)
 		}
 
-		w.Write(list)
+		_, err = w.Write(list)
+		if err != nil {
+			log.WithFields(
+				log.Fields{
+					"err": err,
+				}).Error("Unable to write response.")
+		}
 	})
 
 	r.Get(detailsPath, func(w http.ResponseWriter, r *http.Request, params map[string]string) {
@@ -81,7 +89,11 @@ func startNewDatabaseServer(key string, entity Entity, sync bool, r *router.Rout
 		entry, err := db.GetByIndex(index)
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
-			w.Write(empty)
+			_, err = w.Write(empty)
+			log.WithFields(
+				log.Fields{
+					"err": err,
+				}).Error("Unable to write response.")
 			return
 		}
 
@@ -90,7 +102,13 @@ func startNewDatabaseServer(key string, entity Entity, sync bool, r *router.Rout
 			fmt.Println("Err: ", err)
 		}
 
-		w.Write(list)
+		_, err = w.Write(list)
+		if err != nil {
+			log.WithFields(
+				log.Fields{
+					"err": err,
+				}).Error("Unable to write response.")
+		}
 	})
 
 	r.Post(path, func(w http.ResponseWriter, req *http.Request, params map[string]string) {
