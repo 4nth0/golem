@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"sync"
 )
@@ -35,6 +36,43 @@ func New(path string, sync bool) *Database {
 
 func (db *Database) List() Entries {
 	return db.Entries
+}
+
+type PaginatedEntries struct {
+	Entries Entries `json:"entries"`
+	Limit   int     `json:"limit"`
+	Total   int     `json:"total"`
+	Pages   int     `json:"pages"`
+	Current int     `json:"current"`
+	Prev    int     `json:"prev"`
+	Next    int     `json:"next"`
+}
+
+func (db *Database) PaginatedList(page, limit int) PaginatedEntries {
+	if limit > db.length {
+		limit = db.length
+	}
+	if db.length == 0 || page > db.length/limit {
+		return PaginatedEntries{}
+	}
+	output := PaginatedEntries{
+		Entries: db.Entries[page*limit : (page+1)*limit],
+		Total:   db.length,
+		Pages:   int(math.Ceil(float64(db.length) / float64(limit))),
+		Current: page,
+		Prev:    page - 1,
+		Next:    page + 1,
+		Limit:   limit,
+	}
+
+	if page == 0 {
+		output.Prev = 0
+	}
+	if page == output.Pages {
+		output.Next = page
+	}
+
+	return output
 }
 
 func (db *Database) Load() error {
