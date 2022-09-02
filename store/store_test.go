@@ -1,6 +1,8 @@
 package store
 
 import (
+	"io/ioutil"
+	"log"
 	"os"
 	"testing"
 
@@ -57,6 +59,32 @@ func Test_List(t *testing.T) {
 	assert.Len(t, entries, usersLentgh)
 }
 
+func Test_PaginatedList(t *testing.T) {
+	db := New(usersGoldenPath, false)
+	err := db.Load()
+	assert.Nil(t, err)
+
+	entries := db.PaginatedList(0, 4)
+
+	assert.Len(t, entries.Entries, 4)
+	assert.Equal(t, entries.Limit, 4)
+	assert.Equal(t, entries.Total, usersLentgh)
+	assert.Equal(t, entries.Pages, usersLentgh/4)
+	assert.Equal(t, entries.Current, 0)
+	assert.Equal(t, entries.Prev, 0)
+	assert.Equal(t, entries.Next, 1)
+
+	entries = db.PaginatedList(-1, 4)
+
+	assert.Len(t, entries.Entries, 4)
+	assert.Equal(t, entries.Limit, 4)
+	assert.Equal(t, entries.Total, usersLentgh)
+	assert.Equal(t, entries.Pages, usersLentgh/4)
+	assert.Equal(t, entries.Current, 0)
+	assert.Equal(t, entries.Prev, 0)
+	assert.Equal(t, entries.Next, 1)
+}
+
 func Test_Push(t *testing.T) {
 	db := New(usersGoldenPath, false)
 	err := db.Load()
@@ -108,12 +136,17 @@ func Test_DeleteFromIndex(t *testing.T) {
 }
 
 func Test_Save(t *testing.T) {
-	path := usersGoldenPath + ".test-sync"
-	db := New(path, true)
+	file, err := ioutil.TempFile("", "golem.test-sync.")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.Remove(file.Name())
+
+	db := New(file.Name(), true)
 
 	db.Load() //nolint:all
 
-	err := db.Push(`{"name": "Jody Mills", "type": "Hunter"}`)
+	err = db.Push(`{"name": "Jody Mills", "type": "Hunter"}`)
 	assert.Nil(t, err)
 
 	err = db.Push(`{"name": "Jody Mills", "type": "Hunter"}`)
@@ -125,11 +158,9 @@ func Test_Save(t *testing.T) {
 	err = db.DeleteFromIndex(1)
 	assert.Nil(t, err)
 
-	db2 := New(path, true)
+	db2 := New(file.Name(), true)
 	err = db2.Load()
 	assert.Nil(t, err)
 
 	assert.Equal(t, 2, db2.length)
-
-	os.Remove(path)
 }

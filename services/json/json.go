@@ -76,7 +76,7 @@ func startNewDatabaseServer(key string, entity Entity, sync bool, r *router.Rout
 	if sync {
 		db = loadDatabaseFromFile(key, entity.DBFile, sync)
 	} else {
-		db = store.New("", sync)
+		db = store.New()
 	}
 
 	path := "/" + key
@@ -177,7 +177,7 @@ func loadDatabaseFromFile(entity, path string, sync bool) *store.Database {
 		log.Error("Unable to create db file: ", err)
 	}
 
-	db := store.New(path, sync)
+	db := store.New(store.WithLocalFileSync(path))
 	err := db.Load()
 	if err != nil {
 		fmt.Println("Err: ", err)

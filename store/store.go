@@ -20,18 +20,25 @@ type Database struct {
 	mux      sync.Mutex    `json:"-"`
 }
 
-func New(path string, sync bool) *Database {
-	db := Database{
-		FilePath: path,
-		sync:     sync,
+type Option struct{}
+
+func New(options ...func(*Database)) *Database {
+	db := &Database{}
+	for _, option := range options {
+		option(db)
 	}
 
 	db.length = 0
 	db.Entries = []interface{}{}
 
-	fmt.Println("Init")
+	return db
+}
 
-	return &db
+func WithLocalFileSync(path string) func(*Database) {
+	return func(db *Database) {
+		db.FilePath = path
+		db.sync = true
+	}
 }
 
 func (db *Database) List() Entries {
@@ -54,6 +61,9 @@ func (db *Database) PaginatedList(page, limit int) PaginatedEntries {
 	}
 	if db.length == 0 || page > db.length/limit {
 		return PaginatedEntries{}
+	}
+	if page < 0 {
+		page = 0
 	}
 	output := PaginatedEntries{
 		Entries: db.Entries[page*limit : (page+1)*limit],
