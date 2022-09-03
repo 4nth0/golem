@@ -3,11 +3,12 @@ package store
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"math"
 	"os"
 	"sync"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Entries []interface{}
@@ -29,15 +30,15 @@ func New(options ...func(*Database)) *Database {
 	}
 
 	db.length = 0
-	db.Entries = []interface{}{}
+	db.Entries = make([]interface{}, 0)
 
 	return db
 }
 
-func WithLocalFileSync(path string) func(*Database) {
+func WithLocalFile(path string, sync bool) func(*Database) {
 	return func(db *Database) {
 		db.FilePath = path
-		db.sync = true
+		db.sync = sync
 	}
 }
 
@@ -65,10 +66,11 @@ func (db *Database) PaginatedList(page, limit int) PaginatedEntries {
 	if page < 0 {
 		page = 0
 	}
+	pages := int(math.Ceil(float64(db.length) / float64(limit)))
 	output := PaginatedEntries{
 		Entries: db.Entries[page*limit : (page+1)*limit],
 		Total:   db.length,
-		Pages:   int(math.Ceil(float64(db.length) / float64(limit))),
+		Pages:   pages,
 		Current: page,
 		Prev:    page - 1,
 		Next:    page + 1,
@@ -78,7 +80,7 @@ func (db *Database) PaginatedList(page, limit int) PaginatedEntries {
 	if page == 0 {
 		output.Prev = 0
 	}
-	if page == output.Pages {
+	if page == pages {
 		output.Next = page
 	}
 
@@ -116,10 +118,10 @@ func (db *Database) Save() {
 		return
 	}
 
-	b, _ := json.MarshalIndent(db.Entries, "", "  ")
+	b, _ := json.Marshal(db.Entries)
 	err := ioutil.WriteFile(db.FilePath, b, 0644)
 	if err != nil {
-		fmt.Println("Err: ", err)
+		log.Error("Err: ", err)
 	}
 }
 

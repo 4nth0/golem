@@ -16,7 +16,7 @@ var (
 
 func Test_Init(t *testing.T) {
 	path := "./test/path"
-	db := New(path, false)
+	db := New(WithLocalFile(path, false))
 
 	// DB should start with a length of 0
 	assert.Equal(t, db.length, 0)
@@ -32,7 +32,7 @@ func Test_Init(t *testing.T) {
 }
 
 func Test_Load(t *testing.T) {
-	db := New(usersGoldenPath, false)
+	db := New(WithLocalFile(usersGoldenPath, false))
 
 	err := db.Load()
 
@@ -43,14 +43,14 @@ func Test_Load(t *testing.T) {
 	// DB should have an entries length of 8
 	assert.Len(t, db.Entries, usersLentgh)
 
-	db2 := New("./path/to/nonexistent/file", false)
+	db2 := New(WithLocalFile("./path/to/nonexistent/file", false))
 	err = db2.Load()
 
 	assert.NotNil(t, err)
 }
 
 func Test_List(t *testing.T) {
-	db := New(usersGoldenPath, false)
+	db := New(WithLocalFile(usersGoldenPath, false))
 	err := db.Load()
 	assert.Nil(t, err)
 
@@ -60,7 +60,7 @@ func Test_List(t *testing.T) {
 }
 
 func Test_PaginatedList(t *testing.T) {
-	db := New(usersGoldenPath, false)
+	db := New(WithLocalFile(usersGoldenPath, false))
 	err := db.Load()
 	assert.Nil(t, err)
 
@@ -86,7 +86,7 @@ func Test_PaginatedList(t *testing.T) {
 }
 
 func Test_Push(t *testing.T) {
-	db := New(usersGoldenPath, false)
+	db := New(WithLocalFile(usersGoldenPath, false))
 	err := db.Load()
 	assert.Nil(t, err)
 
@@ -99,7 +99,7 @@ func Test_Push(t *testing.T) {
 }
 
 func Test_GetByIndex(t *testing.T) {
-	db := New(usersGoldenPath, false)
+	db := New(WithLocalFile(usersGoldenPath, false))
 
 	err := db.Load()
 	assert.Nil(t, err)
@@ -112,7 +112,7 @@ func Test_GetByIndex(t *testing.T) {
 }
 
 func Test_DeleteFromIndex(t *testing.T) {
-	db := New(usersGoldenPath, false)
+	db := New(WithLocalFile(usersGoldenPath, false))
 
 	err := db.Load()
 	assert.Nil(t, err)
@@ -142,7 +142,7 @@ func Test_Save(t *testing.T) {
 	}
 	defer os.Remove(file.Name())
 
-	db := New(file.Name(), true)
+	db := New(WithLocalFile(file.Name(), true))
 
 	db.Load() //nolint:all
 
@@ -158,7 +158,7 @@ func Test_Save(t *testing.T) {
 	err = db.DeleteFromIndex(1)
 	assert.Nil(t, err)
 
-	db2 := New(file.Name(), true)
+	db2 := New(WithLocalFile(file.Name(), true))
 	err = db2.Load()
 	assert.Nil(t, err)
 

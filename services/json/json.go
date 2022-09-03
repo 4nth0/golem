@@ -2,13 +2,9 @@ package json
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
-	"strconv"
-	"strings"
 	"text/tabwriter"
 
 	"github.com/4nth0/golem/router"
@@ -17,8 +13,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 )
-
-var empty []byte = []byte("{}")
 
 type JsonServer struct{}
 
@@ -37,10 +31,7 @@ type Pagination struct {
 }
 
 const (
-	ContentTypeJSON         = "application/json"
-	ParamIndexKey           = "index"
-	DefaultPaginationtLimit = 10
-	DefaultPaginationtPage  = 0
+	DefaultDBLocalPath = "./.golem/db/%s.json"
 )
 
 func LaunchService(ctx context.Context, defaultServer *server.Client, port string, config JSONDBConfig, requests chan server.InboundRequest) {
@@ -61,7 +52,7 @@ func LaunchService(ctx context.Context, defaultServer *server.Client, port strin
 
 	for key, entity := range config.Entities {
 		log.Info("Create new DB for: ", key)
-		startNewDatabaseServer(key, entity, config.Sync, s.Router)
+		mountEntity(key, entity, config.Sync, s.Router)
 		printServiceDetails(key)
 	}
 
@@ -70,7 +61,7 @@ func LaunchService(ctx context.Context, defaultServer *server.Client, port strin
 	}
 }
 
-func startNewDatabaseServer(key string, entity Entity, sync bool, r *router.Router) {
+func mountEntity(key string, entity Entity, sync bool, r *router.Router) {
 	var db *store.Database
 
 	if sync {
@@ -82,105 +73,25 @@ func startNewDatabaseServer(key string, entity Entity, sync bool, r *router.Rout
 	path := "/" + key
 	detailsPath := path + "/:" + ParamIndexKey
 
-	w := new(tabwriter.Writer)
-	w.Init(os.Stdout, 16, 8, 0, '\t', 0)
-	defer w.Flush()
-
-	r.Get(path, func(w http.ResponseWriter, r *http.Request, params map[string]string) {
-		w.Header().Set("Content-Type", ContentTypeJSON)
-
-		var list []byte
-		var err error
-
-		if entity.Pagination != nil {
-			list, err = renderPaginatedList(entity, r, db)
-			if err != nil {
-				fmt.Println("Err: ", err)
-			}
-		} else {
-			list, err = json.Marshal(db.List())
-			if err != nil {
-				fmt.Println("Err: ", err)
-			}
-		}
-
-		_, err = w.Write(list)
-		if err != nil {
-			log.WithFields(
-				log.Fields{
-					"err": err,
-				}).Error("Unable to write response.")
-		}
-	})
-
-	r.Get(detailsPath, func(w http.ResponseWriter, r *http.Request, params map[string]string) {
-		w.Header().Set("Content-Type", ContentTypeJSON)
-
-		index, _ := strconv.Atoi(params[ParamIndexKey])
-		entry, err := db.GetByIndex(index)
-		if err != nil {
-			w.WriteHeader(http.StatusNotFound)
-			_, err = w.Write(empty)
-			log.WithFields(
-				log.Fields{
-					"err": err,
-				}).Error("Unable to write response.")
-			return
-		}
-
-		list, err := json.Marshal(entry)
-		if err != nil {
-			fmt.Println("Err: ", err)
-		}
-
-		_, err = w.Write(list)
-		if err != nil {
-			log.WithFields(
-				log.Fields{
-					"err": err,
-				}).Error("Unable to write response.")
-		}
-	})
-
-	r.Post(path, func(w http.ResponseWriter, req *http.Request, params map[string]string) {
-		decoder := json.NewDecoder(req.Body)
-		var t interface{}
-		err := decoder.Decode(&t)
-		if err != nil {
-			panic(err)
-		}
-
-		err = db.Push(t)
-		if err != nil {
-			fmt.Println("Err: ", err)
-		}
-
-		w.WriteHeader(http.StatusCreated)
-	})
-
-	r.Delete(detailsPath, func(w http.ResponseWriter, req *http.Request, params map[string]string) {
-		index, _ := strconv.Atoi(params["index"])
-		err := db.DeleteFromIndex(index)
-		if err != nil {
-			fmt.Println("Err: ", err)
-		}
-
-		w.WriteHeader(http.StatusOK)
-	})
+	r.Get(path, ListHandler(db, key, entity))
+	r.Get(detailsPath, GetHandler(db))
+	r.Post(path, CreateHandler(db))
+	r.Delete(detailsPath, DeleteHandler(db))
 }
 
+// @TODO Return error to avoid silent fail
 func loadDatabaseFromFile(entity, path string, sync bool) *store.Database {
 	if path == "" {
-		path = fmt.Sprintf("./.golem/db/%s.json", entity)
+		path = fmt.Sprintf(DefaultDBLocalPath, entity)
 	}
 	if err := createDBFileIfNotExist(path); err != nil {
 		log.Error("Unable to create db file: ", err)
 	}
 
-	db := store.New(store.WithLocalFileSync(path))
+	db := store.New(store.WithLocalFile(path, true))
 	err := db.Load()
 	if err != nil {
-		fmt.Println("Err: ", err)
+		log.Error("Err: ", err)
 	}
 
 	return db
@@ -191,61 +102,6 @@ func createDBFileIfNotExist(path string) error {
 		return ioutil.WriteFile(path, []byte("[]"), 0644)
 	}
 	return nil
-}
-
-func renderPaginatedList(entity Entity, r *http.Request, db *store.Database) ([]byte, error) {
-	var err error
-	limit := DefaultPaginationtLimit
-	if r.URL.Query().Get("limit") != "" {
-		limit, err = strconv.Atoi(r.URL.Query().Get("limit"))
-		if err != nil || limit < 1 {
-			limit = DefaultPaginationtLimit
-		}
-	}
-
-	page := DefaultPaginationtPage
-	if r.URL.Query().Get("page") != "" {
-		page, err = strconv.Atoi(r.URL.Query().Get("page"))
-		if err != nil || page < 0 {
-			page = 0
-		}
-	}
-
-	entries := db.PaginatedList(page, limit)
-	if entity.Pagination.Template != "" {
-		rendered, err := applyPaginationTemplate(entity, entity.Pagination.Template, entries)
-		if err != nil {
-			return nil, nil
-		}
-		return []byte(rendered), nil
-	}
-
-	return json.Marshal(entries)
-}
-
-func applyPaginationTemplate(entity Entity, template string, entries store.PaginatedEntries) (string, error) {
-	jsonEntries, err := json.Marshal(entries.Entries)
-	if err != nil {
-		return "", err
-	}
-	attributes := map[string]string{
-		"entries":            string(jsonEntries),
-		"entity.name":        "entity.Name",
-		"pagination.limit":   fmt.Sprint(entries.Limit),
-		"pagination.total":   fmt.Sprint(entries.Total),
-		"pagination.pages":   fmt.Sprint(entries.Pages),
-		"pagination.current": fmt.Sprint(entries.Current),
-		"pagination.prev":    fmt.Sprint(entries.Prev),
-		"pagination.next":    fmt.Sprint(entries.Next),
-	}
-
-	output := template
-
-	for key, value := range attributes {
-		output = strings.Replace(output, "${"+key+"}", value, -1)
-	}
-
-	return output, nil
 }
 
 func printServiceDetails(entity string) {
