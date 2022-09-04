@@ -25,12 +25,12 @@ type Option struct{}
 
 func New(options ...func(*Database)) *Database {
 	db := &Database{}
+	db.length = 0
+	db.Entries = make([]interface{}, 0)
+
 	for _, option := range options {
 		option(db)
 	}
-
-	db.length = 0
-	db.Entries = make([]interface{}, 0)
 
 	return db
 }
@@ -39,6 +39,13 @@ func WithLocalFile(path string, sync bool) func(*Database) {
 	return func(db *Database) {
 		db.FilePath = path
 		db.sync = sync
+	}
+}
+
+func WithData(data Entries) func(*Database) {
+	return func(db *Database) {
+		db.length = len(data)
+		db.Entries = data
 	}
 }
 

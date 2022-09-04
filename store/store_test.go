@@ -14,7 +14,7 @@ var (
 	usersLentgh     = 8
 )
 
-func Test_Init(t *testing.T) {
+func Test_InitFromFile(t *testing.T) {
 	path := "./test/path"
 	db := New(WithLocalFile(path, false))
 
@@ -28,6 +28,19 @@ func Test_Init(t *testing.T) {
 	assert.Equal(t, db.FilePath, path)
 
 	// DB value of sync should be equal to false
+	assert.False(t, db.sync)
+}
+
+func Test_InitFromInitialData(t *testing.T) {
+	entries := []map[string]string{
+		//{"name": "Jody Mills", "type": "Hunter"}
+		map[string]string{"name": "Jody Mills", "type": "Hunter"},
+	}
+	db := New(WithData(Entries{entries}))
+
+	assert.Equal(t, db.length, 1)
+	assert.Len(t, db.Entries, 1)
+
 	assert.False(t, db.sync)
 }
 
