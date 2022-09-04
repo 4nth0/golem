@@ -41,12 +41,17 @@ func renderPaginatedList(entityName string, entityConfig Entity, r *http.Request
 }
 
 func applyPaginationTemplate(entityName string, template string, entries store.PaginatedEntries) (string, error) {
-	jsonEntries, err := json.Marshal(entries.Entries)
-	if err != nil {
-		return "", err
+	var values = "[]"
+
+	if len(entries.Entries) > 0 {
+		jsonEntries, err := json.Marshal(entries.Entries)
+		if err != nil {
+			return "", err
+		}
+		values = string(jsonEntries)
 	}
 	attributes := map[string]string{
-		"entries":            string(jsonEntries),
+		"entries":            values,
 		"entity.name":        entityName,
 		"pagination.limit":   fmt.Sprint(entries.Limit),
 		"pagination.total":   fmt.Sprint(entries.Total),
