@@ -52,10 +52,11 @@ func main() {
 	}()
 
 	commands := map[string]command.Command{
-		"init": command.InitCmd(),
-		"help": command.HelpCmd(),
-		"run":  command.RunCmd(ctx, ConfigPath),
-		"json": command.JsonCmd(ctx),
+		"init":    command.InitCmd(),
+		"help":    command.HelpCmd(Version),
+		"run":     command.RunCmd(ctx, ConfigPath),
+		"json":    command.JsonCmd(ctx),
+		"version": command.VersionCmd(Version),
 	}
 
 	fs := flag.NewFlagSet("golem", flag.ExitOnError)
@@ -66,7 +67,7 @@ func main() {
 	args := fs.Args()
 
 	if len(args) == 0 {
-		command.HelpCmd()
+		command.HelpCmd(Version)
 		log.Print("No argument provided")
 		return
 	}
@@ -75,6 +76,6 @@ func main() {
 		log.Fatalf("Unknown command: %s", args[0])
 	} else if err := cmd.Handler(args[1:]); err != nil {
 		fmt.Println(err)
-		command.HelpCmd()
+		command.HelpCmd(Version)
 	}
 }
