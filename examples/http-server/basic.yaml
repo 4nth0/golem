@@ -1,0 +1,10 @@
+port: "3000"
+services:
+  - name: Ping
+    http_config:
+      routes:
+        # In this example, we specify a simple route "/ping" returning the response "pong!"
+        # This configuration is the minimum required to start a service.
+        # By default, the server will declare a "/ping" route with the GET method.
+        /ping:
+          body: pong !

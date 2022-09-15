@@ -8,7 +8,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"text/tabwriter"
 
 	"github.com/4nth0/golem/config"
 	"github.com/4nth0/golem/server"
@@ -141,22 +140,4 @@ func initializeEntity(ctx context.Context, entity string, opts *JsonOpts, defaul
 	}
 
 	go jsonServerService.LaunchService(ctx, defaultServer, "", service.JSONDBConfig, nil)
-	printServiceDetails(entity)
-}
-
-func printServiceDetails(entity string) {
-	path := "/" + entity
-	detailsPath := path + "/:index"
-
-	w := new(tabwriter.Writer)
-	w.Init(os.Stdout, 16, 8, 2, '\t', 0)
-	defer w.Flush()
-
-	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "Method", "Path", "Description")
-	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "------", "----", "-----------")
-	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "GET", path, "Get all resources")
-	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "GET", detailsPath, "Get a specific resource specified by the index")
-	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "POST", path, "Create new resource")
-	fmt.Fprintf(w, "\n %s\t%s\t%s\t", "DELETE", detailsPath, "Delete a specific resource specified by the index")
-	fmt.Fprintf(w, "\n\n")
 }

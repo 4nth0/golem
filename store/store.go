@@ -3,10 +3,12 @@ package store
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"sync"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type Entries []interface{}
@@ -19,22 +21,77 @@ type Database struct {
 	mux      sync.Mutex    `json:"-"`
 }
 
-func New(path string, sync bool) *Database {
-	db := Database{
-		FilePath: path,
-		sync:     sync,
+type Option struct{}
+
+func New(options ...func(*Database)) *Database {
+	db := &Database{}
+	db.length = 0
+	db.Entries = make([]interface{}, 0)
+
+	for _, option := range options {
+		option(db)
 	}
 
-	db.length = 0
-	db.Entries = []interface{}{}
+	return db
+}
 
-	fmt.Println("Init")
+func WithLocalFile(path string, sync bool) func(*Database) {
+	return func(db *Database) {
+		db.FilePath = path
+		db.sync = sync
+	}
+}
 
-	return &db
+func WithData(data Entries) func(*Database) {
+	return func(db *Database) {
+		db.length = len(data)
+		db.Entries = data
+	}
 }
 
 func (db *Database) List() Entries {
 	return db.Entries
+}
+
+type PaginatedEntries struct {
+	Entries Entries `json:"entries"`
+	Limit   int     `json:"limit"`
+	Total   int     `json:"total"`
+	Pages   int     `json:"pages"`
+	Current int     `json:"current"`
+	Prev    int     `json:"prev"`
+	Next    int     `json:"next"`
+}
+
+func (db *Database) PaginatedList(page, limit int) PaginatedEntries {
+	if limit > db.length {
+		limit = db.length
+	}
+	if db.length == 0 || page > db.length/limit {
+		return PaginatedEntries{}
+	}
+	if page < 0 {
+		page = 0
+	}
+	pages := int(math.Ceil(float64(db.length) / float64(limit)))
+	output := PaginatedEntries{
+		Entries: db.Entries[page*limit : (page+1)*limit],
+		Total:   db.length,
+		Pages:   pages,
+		Current: page,
+		Prev:    page - 1,
+		Next:    page + 1,
+		Limit:   limit,
+	}
+
+	if page == 0 {
+		output.Prev = 0
+	}
+	if page == pages {
+		output.Next = page
+	}
+
+	return output
 }
 
 func (db *Database) Load() error {
@@ -68,10 +125,10 @@ func (db *Database) Save() {
 		return
 	}
 
-	b, _ := json.MarshalIndent(db.Entries, "", "  ")
+	b, _ := json.Marshal(db.Entries)
 	err := ioutil.WriteFile(db.FilePath, b, 0644)
 	if err != nil {
-		fmt.Println("Err: ", err)
+		log.Error("Err: ", err)
 	}
 }
 
