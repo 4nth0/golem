@@ -24,6 +24,13 @@ builds:
   flags:
     - -trimpath
 
+dockers:
+- image_templates: ["lesspion/golem:{{ .Tag }}"]
+  dockerfile: goreleaser.Dockerfile
+  use: buildx
+  build_flag_templates:
+  - "--build-arg=GIT_TAG_NAME={{ .Tag }}"
+
 archives:
 - format: zip
   id: golem
