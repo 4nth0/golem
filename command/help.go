@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func HelpCmd() Command {
+func HelpCmd(version string) Command {
 	fs := flag.NewFlagSet("golem json", flag.ExitOnError)
 
 	return Command{
@@ -15,14 +15,14 @@ func HelpCmd() Command {
 			if err != nil {
 				return err
 			}
-			help()
+			help(version)
 			return nil
 		},
 	}
 }
 
-func help() {
-	message := "Golem version " + Version
+func help(version string) {
+	message := "Golem version " + version
 	message += `
 
 Usage: golem <command> [command flags]
