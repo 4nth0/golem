@@ -32,7 +32,8 @@ Donec euismod tellus vel sem vulputate blastoise.
 Suspendisse feugiat quam quis sagittis fringilla.
 Nullam dictum vehicula libero nec blastoise.
 Sed suscipit vitae justo vel porttitor.`
-	templateGoldenPath = "../../test/lorem.golden.tpl"
+	templateGoldenPath  = "../../test/lorem.golden.tpl"
+	templateGoldenPath2 = "../../test/ipsum.golden.tpl"
 )
 
 func Test_Load(t *testing.T) {

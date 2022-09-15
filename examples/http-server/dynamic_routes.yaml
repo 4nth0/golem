@@ -1,0 +1,10 @@
+port: "3000"
+services:
+  - name: Ping
+    http_config:
+      routes:
+        # Here we exploit the possibility of having dynamic paths.
+        # In this example we have the route "/user/:id" where ":id" is variable.
+        # We also observe that the variable parameter can be used in the response.
+        /user/:id:
+          body: Hi User N°${params.id}!

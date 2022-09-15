@@ -1,0 +1,89 @@
+port: "3000"
+services:
+  # For this first example service, we create a service of the type HTTP,
+  # this is the default type, so there is no need to specify the type.
+  #
+  # This type of service allows you to start an HTTP server and attach routes to it.
+  #
+  # For this service, we do not want to listen on a specific port,
+  # the routes created will therefore be accessible on the main port declared
+  # at the beginning of this file, namely 3000 in our case.
+  - name: Ping
+    http_config:
+      routes:
+        # In this example, we specify a simple route "/ping" returning the response "pong!"
+        # This configuration is the minimum required to start a service.
+        # By default, the server will declare a "/ping" route with the GET method.
+        /ping:
+          body: pong !
+        /slow-ping:
+          body: pong !
+          latency: 2s
+        # For the following example, we use several bodies.
+        # In this case, Golem will respond with one of the random bodies for each request.
+        /multiple-bodies:
+          bodies:
+            - “People don’t just disappear, Dean. Other people just stop looking for them.” — Sam Winchester
+            - “The internet is more than just naked people. You do know that?” — Sam Winchester
+            - “I’ll interrogate the cat.” — Castiel
+            - “If you’re gonna make an omelet, sometimes you have to break some spines.” — Crowley
+        # Here we exploit the possibility of having dynamic paths.
+        # In this example we have the route "/user/:id" where ":id" is variable.
+        # We also observe that the variable parameter can be used in the response.
+        /user/:id:
+          body: Hi User N°${params.id}!
+        # We can define the returned body as well as the headers
+        # Here we return a response in JSON format
+        /quotes:
+          headers:
+            "Content-type": "application/json"
+          body: > 
+            [
+              "“People don’t just disappear, Dean. Other people just stop looking for them.” — Sam Winchester",
+              "“The internet is more than just naked people. You do know that?” — Sam Winchester",
+              "“I’ll interrogate the cat.” — Castiel",
+              "“If you’re gonna make an omelet, sometimes you have to break some spines.” — Crowley"
+            ]
+  
+  # In this other example, we use a service of the type JSON Server.
+  # This type of service makes it possible to start a database in memory and to associate
+  # the different routes necessary to do CRUD with it: 
+  #
+  #   - GET     entity :    allows you to list the entities present 
+  #   - GET     entity/:id  allows you to retrieve an entity by its position
+  #   - POST    entity      allows you to add an entry
+  #   - DELETE  entity      allows you to delete an entry
+  #   - UPDATE  entity      allows you to update an entry by its position
+  #
+  - name: JSON Server
+    type: JSON_SERVER
+    #For this service, we have chosen not to listen on the main port. We, therefore, indicate a new port so that Golem starts an additional server on which to attach the handlers of the service
+    port: 3001
+    json_server_config:
+      # Here we indicate that the in-memory database should be synchronized to disk.
+     # In this way, the data is preserved when Golem is stopped.
+      sync: true
+      # We list here the different entities that will be supported by Golem. 
+      entities:
+        pages: 
+        posts: 
+          db_file: ./.golem/db/posts.json
+        users: 
+          pagination: 
+            template: | 
+              {
+                "entries": ${entries},
+                "_metadata": {
+                  "per_page": ${pagination.limit},
+                  "page": ${pagination.current},
+                  "page_count": ${pagination.pages},
+                  "total_count": ${pagination.total},
+                  "links": {
+                    "self":  "/${entity.name}?limit=${pagination.limit}&page=${pagination.current}",
+                    "first": "/${entity.name}?limit=${pagination.limit}&page=${pagination.current}",
+                    "next":  "/${entity.name}?limit=${pagination.limit}&page=${pagination.next}",
+                    "prev":  "/${entity.name}?limit=${pagination.limit}&page=${pagination.prev}"
+                  }
+                }
+              }
+          db_file: ./.golem/db/users.json

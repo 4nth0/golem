@@ -1,6 +1,8 @@
 package store
 
 import (
+	"io/ioutil"
+	"log"
 	"os"
 	"testing"
 
@@ -12,9 +14,9 @@ var (
 	usersLentgh     = 8
 )
 
-func Test_Init(t *testing.T) {
+func Test_InitFromFile(t *testing.T) {
 	path := "./test/path"
-	db := New(path, false)
+	db := New(WithLocalFile(path, false))
 
 	// DB should start with a length of 0
 	assert.Equal(t, db.length, 0)
@@ -29,8 +31,21 @@ func Test_Init(t *testing.T) {
 	assert.False(t, db.sync)
 }
 
+func Test_InitFromInitialData(t *testing.T) {
+	entries := []map[string]string{
+		//{"name": "Jody Mills", "type": "Hunter"}
+		map[string]string{"name": "Jody Mills", "type": "Hunter"},
+	}
+	db := New(WithData(Entries{entries}))
+
+	assert.Equal(t, db.length, 1)
+	assert.Len(t, db.Entries, 1)
+
+	assert.False(t, db.sync)
+}
+
 func Test_Load(t *testing.T) {
-	db := New(usersGoldenPath, false)
+	db := New(WithLocalFile(usersGoldenPath, false))
 
 	err := db.Load()
 
@@ -41,14 +56,14 @@ func Test_Load(t *testing.T) {
 	// DB should have an entries length of 8
 	assert.Len(t, db.Entries, usersLentgh)
 
-	db2 := New("./path/to/nonexistent/file", false)
+	db2 := New(WithLocalFile("./path/to/nonexistent/file", false))
 	err = db2.Load()
 
 	assert.NotNil(t, err)
 }
 
 func Test_List(t *testing.T) {
-	db := New(usersGoldenPath, false)
+	db := New(WithLocalFile(usersGoldenPath, false))
 	err := db.Load()
 	assert.Nil(t, err)
 
@@ -57,8 +72,34 @@ func Test_List(t *testing.T) {
 	assert.Len(t, entries, usersLentgh)
 }
 
+func Test_PaginatedList(t *testing.T) {
+	db := New(WithLocalFile(usersGoldenPath, false))
+	err := db.Load()
+	assert.Nil(t, err)
+
+	entries := db.PaginatedList(0, 4)
+
+	assert.Len(t, entries.Entries, 4)
+	assert.Equal(t, entries.Limit, 4)
+	assert.Equal(t, entries.Total, usersLentgh)
+	assert.Equal(t, entries.Pages, usersLentgh/4)
+	assert.Equal(t, entries.Current, 0)
+	assert.Equal(t, entries.Prev, 0)
+	assert.Equal(t, entries.Next, 1)
+
+	entries = db.PaginatedList(-1, 4)
+
+	assert.Len(t, entries.Entries, 4)
+	assert.Equal(t, entries.Limit, 4)
+	assert.Equal(t, entries.Total, usersLentgh)
+	assert.Equal(t, entries.Pages, usersLentgh/4)
+	assert.Equal(t, entries.Current, 0)
+	assert.Equal(t, entries.Prev, 0)
+	assert.Equal(t, entries.Next, 1)
+}
+
 func Test_Push(t *testing.T) {
-	db := New(usersGoldenPath, false)
+	db := New(WithLocalFile(usersGoldenPath, false))
 	err := db.Load()
 	assert.Nil(t, err)
 
@@ -71,7 +112,7 @@ func Test_Push(t *testing.T) {
 }
 
 func Test_GetByIndex(t *testing.T) {
-	db := New(usersGoldenPath, false)
+	db := New(WithLocalFile(usersGoldenPath, false))
 
 	err := db.Load()
 	assert.Nil(t, err)
@@ -84,7 +125,7 @@ func Test_GetByIndex(t *testing.T) {
 }
 
 func Test_DeleteFromIndex(t *testing.T) {
-	db := New(usersGoldenPath, false)
+	db := New(WithLocalFile(usersGoldenPath, false))
 
 	err := db.Load()
 	assert.Nil(t, err)
@@ -108,12 +149,17 @@ func Test_DeleteFromIndex(t *testing.T) {
 }
 
 func Test_Save(t *testing.T) {
-	path := usersGoldenPath + ".test-sync"
-	db := New(path, true)
+	file, err := ioutil.TempFile("", "golem.test-sync.")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer os.Remove(file.Name())
+
+	db := New(WithLocalFile(file.Name(), true))
 
 	db.Load() //nolint:all
 
-	err := db.Push(`{"name": "Jody Mills", "type": "Hunter"}`)
+	err = db.Push(`{"name": "Jody Mills", "type": "Hunter"}`)
 	assert.Nil(t, err)
 
 	err = db.Push(`{"name": "Jody Mills", "type": "Hunter"}`)
@@ -125,11 +171,9 @@ func Test_Save(t *testing.T) {
 	err = db.DeleteFromIndex(1)
 	assert.Nil(t, err)
 
-	db2 := New(path, true)
+	db2 := New(WithLocalFile(file.Name(), true))
 	err = db2.Load()
 	assert.Nil(t, err)
 
 	assert.Equal(t, 2, db2.length)
-
-	os.Remove(path)
 }

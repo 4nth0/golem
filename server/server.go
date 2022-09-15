@@ -1,7 +1,9 @@
 package server
 
 import (
+	"bytes"
 	"context"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
@@ -19,9 +21,10 @@ type Client struct {
 }
 
 type InboundRequest struct {
-	URL     *url.URL
-	Method  string
-	Headers map[string][]string
+	URL     *url.URL            `json:"url"`
+	Method  string              `json:"method"`
+	Headers map[string][]string `json:"headers"`
+	Body    string              `json:"body,omitempty"`
 }
 
 // NewServer create a new Server instance that contains a new Mux and a new Router
@@ -95,10 +98,23 @@ func (s *Client) Listen(ctx context.Context) {
 
 func (s *Client) broadcastInboundRequest(req *http.Request) {
 	if s.InboundRequests != nil {
-		s.InboundRequests <- InboundRequest{
+		inbound := InboundRequest{
 			URL:     req.URL,
 			Method:  req.Method,
 			Headers: req.Header,
 		}
+
+		if req.Body != nil {
+			body, err := ioutil.ReadAll(req.Body)
+			if err != nil {
+				log.Error("Unable to start server listening.")
+			}
+			req.Body.Close()
+			inbound.Body = string(body)
+
+			req.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+		}
+
+		s.InboundRequests <- inbound
 	}
 }
