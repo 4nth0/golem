@@ -16,6 +16,9 @@ services:
         # By default, the server will declare a "/ping" route with the GET method.
         /ping:
           body: pong !
+        /slow-ping:
+          body: pong !
+          latency: 2s
         # For the following example, we use several bodies.
         # In this case, Golem will respond with one of the random bodies for each request.
         /multiple-bodies:
@@ -29,8 +32,8 @@ services:
         # We also observe that the variable parameter can be used in the response.
         /user/:id:
           body: Hi User N°${params.id}!
-        # Nous pouvons définir le body retourné ainsi que les headers
-        # Ici nous retournons une réponse au format JSON
+        # We can define the returned body as well as the headers
+        # Here we return a response in JSON format
         /quotes:
           headers:
             "Content-type": "application/json"

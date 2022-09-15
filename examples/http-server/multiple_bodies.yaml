@@ -1,0 +1,14 @@
+port: "3000"
+services:
+  - name: Ping
+    http_config:
+      routes:
+        # For the following example, we use several bodies.
+        # In this case, Golem will respond with one of the random bodies for each request.
+        /multiple-bodies:
+          bodies:
+            - “People don’t just disappear, Dean. Other people just stop looking for them.” — Sam Winchester
+            - “The internet is more than just naked people. You do know that?” — Sam Winchester
+            - “I’ll interrogate the cat.” — Castiel
+            - “If you’re gonna make an omelet, sometimes you have to break some spines.” — Crowley
+        
