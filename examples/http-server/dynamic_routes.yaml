@@ -1,0 +1,18 @@
+# For this first example service, we create a service of the type HTTP,
+# this is the default type, so there is no need to specify the type.
+
+# This type of service allows you to start an HTTP server and attach routes to it.
+
+# For this service, we do not want to listen on a specific port,
+# the routes created will therefore be accessible on the main port declared
+# at the beginning of this file, namely 3000 in our case.
+port: "3000"
+services:
+  - name: Ping
+    http_config:
+      routes:
+        # Here we exploit the possibility of having dynamic paths.
+        # In this example we have the route "/user/:id" where ":id" is variable.
+        # We also observe that the variable parameter can be used in the response.
+        /user/:id:
+          body: Hi User N°${params.id}!
