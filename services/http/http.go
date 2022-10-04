@@ -4,9 +4,12 @@ import (
 	"context"
 	"math/rand"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/4nth0/golem/server"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -40,6 +43,26 @@ var (
 	DefaultMethod     string = "GET"
 	DefaultStatusCode int    = http.StatusOK
 )
+
+var M *Metrics
+
+func init() {
+	M = initMetrics()
+}
+
+type Metrics struct {
+	HTTPDurationHistogram *prometheus.HistogramVec
+}
+
+func initMetrics() *Metrics {
+	return &Metrics{
+		HTTPDurationHistogram: promauto.NewHistogramVec(prometheus.HistogramOpts{
+			Name:    "http_request_duration",
+			Help:    "The http request duration",
+			Buckets: []float64{0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10},
+		}, []string{"path", "method", "status_code"}),
+	}
+}
 
 // LaunchService
 func LaunchService(ctx context.Context, defaultServer *server.Client, port string, globalVars map[string]string, config ServerConfig, requests chan server.InboundRequest) {
@@ -86,6 +109,12 @@ func launch(path string, route HTTPHandler, globalVars map[string]string, s *ser
 		}).Info("Adding new route")
 
 	s.Router.Add(route.Method, path, func(w http.ResponseWriter, r *http.Request, params map[string]string) {
+		start := time.Now()
+
+		defer func() {
+			M.HTTPDurationHistogram.WithLabelValues(path, route.Method, strconv.Itoa(route.Code)).Observe(time.Since(start).Seconds())
+		}()
+
 		log.WithFields(
 			log.Fields{
 				"method": route.Method,
