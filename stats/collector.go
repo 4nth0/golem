@@ -6,8 +6,8 @@ import (
 
 	fs "github.com/4nth0/golem/internal/stats/fs"
 	pg "github.com/4nth0/golem/internal/stats/postgresql"
+	"github.com/4nth0/golem/log"
 	"github.com/4nth0/golem/server"
-	log "github.com/sirupsen/logrus"
 )
 
 type Collector struct {
@@ -45,7 +45,7 @@ func (c *Collector) Collect(ctx context.Context, requests chan server.InboundReq
 		case request := <-requests:
 			err := c.client.PushRequest(request)
 			if err != nil {
-				log.Error(err)
+				log.Error("Unable to collect request", "err", err)
 			}
 		}
 	}

@@ -7,10 +7,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/4nth0/golem/log"
 	"github.com/4nth0/golem/server"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
-	log "github.com/sirupsen/logrus"
 )
 
 // HTTPHandler
@@ -102,12 +102,11 @@ func launch(path string, route HTTPHandler, globalVars map[string]string, s *ser
 
 	route = normalizeRouteConfiguration(route)
 
-	log.WithFields(
-		log.Fields{
-			"method": route.Method,
-			"path":   path,
-		}).Info("Adding new route")
-
+	log.Info(
+		"Adding new route",
+		"method", route.Method,
+		"path", path,
+	)
 	s.Router.Add(route.Method, path, func(w http.ResponseWriter, r *http.Request, params map[string]string) {
 		start := time.Now()
 
@@ -115,13 +114,12 @@ func launch(path string, route HTTPHandler, globalVars map[string]string, s *ser
 			M.HTTPDurationHistogram.WithLabelValues(path, route.Method, strconv.Itoa(route.Code)).Observe(time.Since(start).Seconds())
 		}()
 
-		log.WithFields(
-			log.Fields{
-				"method": route.Method,
-				"path":   path,
-				"status": route.Code,
-			}).Info("New inbound request.")
-
+		log.Info(
+			"New inbound request.",
+			"method", route.Method,
+			"path", path,
+			"status", route.Code,
+		)
 		if len(route.Headers) > 0 {
 			for key, value := range route.Headers {
 				w.Header().Add(key, value)
@@ -134,10 +132,7 @@ func launch(path string, route HTTPHandler, globalVars map[string]string, s *ser
 		w.WriteHeader(route.Code)
 		_, err := w.Write([]byte(generateBodyResponse(route, globalVars, params)))
 		if err != nil {
-			log.WithFields(
-				log.Fields{
-					"err": err,
-				}).Error("Unable to write response.")
+			log.Error("Unable to write response.", "err", err)
 		}
 
 	})
@@ -145,52 +140,30 @@ func launch(path string, route HTTPHandler, globalVars map[string]string, s *ser
 
 func normalizeRouteConfiguration(route HTTPHandler) HTTPHandler {
 	if route.Code == 0 {
-		log.WithFields(
-			log.Fields{
-				"code": DefaultStatusCode,
-			}).Debug("Status code not provided, use default.")
-
+		log.Debug("Status code not provided, use default.", "code", DefaultStatusCode)
 		route.Code = DefaultStatusCode
 	}
 	if route.Method == "" {
-		log.WithFields(
-			log.Fields{
-				"method": DefaultMethod,
-			}).Debug("HTTP method not provided, use default.")
-
+		log.Debug("HTTP method not provided, use default.", "method", DefaultMethod)
 		route.Method = DefaultMethod
 	}
 
 	if route.BodyFile != "" {
-		log.WithFields(
-			log.Fields{
-				"path": route.BodyFile,
-			}).Debug("Use body template file.")
-
+		log.Debug("Use body template file.", "path", route.BodyFile)
 		result, err := LoadTemplate(route.BodyFile)
 		if err != nil {
-			log.WithFields(
-				log.Fields{
-					"path": route.BodyFile,
-				}).Error("Unable to load template file")
+			log.Error("Unable to load template file", "path", route.BodyFile)
 		} else {
 			route.Body = result
 		}
 	}
 
 	if len(route.BodyFiles) > 0 {
-		log.WithFields(
-			log.Fields{
-				"paths": route.BodyFiles,
-			}).Debug("Use body template file.")
-
+		log.Debug("Use body template file.", "path", route.BodyFile)
 		for _, path := range route.BodyFiles {
 			result, err := LoadTemplate(path)
 			if err != nil {
-				log.WithFields(
-					log.Fields{
-						"path": path,
-					}).Error("Unable to load template file")
+				log.Error("Unable to load template file", "path", path)
 			} else {
 				route.Bodies = append(route.Bodies, result)
 			}

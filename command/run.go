@@ -47,7 +47,6 @@ func RunCmd(ctx context.Context, configPath string) Command {
 func Run(ctx context.Context, opts *RunOpts, requests chan server.InboundRequest) error {
 	log.Info("Load configuration file")
 	cfg, err := config.LoadConfig(opts.ConfigFile)
-
 	if err != nil {
 		return err
 	}
