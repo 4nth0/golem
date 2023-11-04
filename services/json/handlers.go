@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/4nth0/golem/log"
 	"github.com/4nth0/golem/router/tree"
 	"github.com/4nth0/golem/store"
-	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -29,10 +29,7 @@ func GetHandler(db *store.Database) tree.Handler {
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)
 			_, err = w.Write(empty)
-			log.WithFields(
-				log.Fields{
-					"err": err,
-				}).Error("Unable to write response.")
+			log.Error("Unable to write response.", "err", err)
 			return
 		}
 
@@ -43,10 +40,7 @@ func GetHandler(db *store.Database) tree.Handler {
 
 		_, err = w.Write(list)
 		if err != nil {
-			log.WithFields(
-				log.Fields{
-					"err": err,
-				}).Error("Unable to write response.")
+			log.Error("Unable to write response.", "err", err)
 		}
 	}
 }
@@ -72,10 +66,7 @@ func ListHandler(db *store.Database, entityName string, entity Entity) tree.Hand
 
 		_, err = w.Write(list)
 		if err != nil {
-			log.WithFields(
-				log.Fields{
-					"err": err,
-				}).Error("Unable to write response.")
+			log.Error("Unable to write response.", "err", err)
 		}
 	}
 }
@@ -91,7 +82,7 @@ func CreateHandler(db *store.Database) tree.Handler {
 
 		err = db.Push(t)
 		if err != nil {
-			log.Error("Err: ", err)
+			log.Error("Unable to push request in db", "err", err)
 		}
 
 		w.WriteHeader(http.StatusCreated)
@@ -103,7 +94,7 @@ func DeleteHandler(db *store.Database) tree.Handler {
 		index, _ := strconv.Atoi(params["index"])
 		err := db.DeleteFromIndex(index)
 		if err != nil {
-			log.Error("Err: ", err)
+			log.Error("Unable to delete entry", "err", err)
 		}
 
 		w.WriteHeader(http.StatusOK)

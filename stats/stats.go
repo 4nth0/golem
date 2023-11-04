@@ -1,8 +1,6 @@
 package stats
 
 import (
-	"encoding/json"
-
 	"github.com/4nth0/golem/server"
 )
 
@@ -11,7 +9,7 @@ type StatsClient struct {
 }
 
 type StatsWriter interface {
-	WriteLine(string) error
+	WriteLine(server.InboundRequest) error
 	Close()
 }
 
@@ -22,7 +20,7 @@ func NewClient(writer StatsWriter) *StatsClient {
 }
 
 func (s StatsClient) PushRequest(req server.InboundRequest) error {
-	line, _ := json.Marshal(req)
+	// line, _ := json.Marshal(req)
 
-	return s.Writer.WriteLine(string(line))
+	return s.Writer.WriteLine(req)
 }

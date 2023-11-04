@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"time"
+
+	"github.com/4nth0/golem/server"
 )
 
 type Client struct {
@@ -25,7 +27,7 @@ func NewClient(dest string) *Client {
 	}
 }
 
-func (f Client) WriteLine(entry string) error {
+func (f Client) WriteLine(entry server.InboundRequest) error {
 	line := NewLine(entry)
 	_, err := f.file.WriteString(line.String())
 	return err
@@ -36,11 +38,11 @@ func (f Client) Close() {
 }
 
 type Line struct {
-	CreatedAt time.Time `json:"created_at"`
-	Entry     string    `json:"entry"`
+	CreatedAt time.Time             `json:"created_at"`
+	Entry     server.InboundRequest `json:"entry"`
 }
 
-func NewLine(entry string) Line {
+func NewLine(entry server.InboundRequest) Line {
 	return Line{
 		Entry:     entry,
 		CreatedAt: time.Now(),

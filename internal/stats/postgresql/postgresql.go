@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/4nth0/golem/server"
 	_ "github.com/lib/pq"
 )
 
@@ -32,7 +33,7 @@ func NewClient(connection string) *Client {
 	}
 }
 
-func (f Client) WriteLine(line string) error {
+func (f Client) WriteLine(line server.InboundRequest) error {
 	sqlStatement := `
 INSERT INTO ` + f.dbInfos.DBName + ` (line, created_at)
 VALUES ($1, $2)`

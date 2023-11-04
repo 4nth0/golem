@@ -31,6 +31,7 @@ func NewTree() *TreeNode {
 
 func (t *TreeNode) AddNode(path string, method string, handler Handler) {
 	path = strings.TrimPrefix(path, PathDelimiter)
+	path = strings.TrimSuffix(path, PathDelimiter)
 	splitted := strings.Split(path, PathDelimiter)
 
 	currentNode := t
@@ -72,6 +73,7 @@ func (t *TreeNode) AddNode(path string, method string, handler Handler) {
 
 func (t *TreeNode) GetNode(path, method string) (Handler, map[string]string, error) {
 	path = strings.TrimPrefix(path, PathDelimiter)
+	path = strings.TrimSuffix(path, PathDelimiter)
 	splitted := strings.Split(path, PathDelimiter)
 	params := map[string]string{}
 	currentNode := t
@@ -105,31 +107,6 @@ func (t *TreeNode) GetNode(path, method string) (Handler, map[string]string, err
 	return nil, nil, nil
 }
 
-func (t *TreeNode) RemoveNode(path string) {
-	path = strings.TrimPrefix(path, PathDelimiter)
-	splitted := strings.Split(path, PathDelimiter)
-
-	currentNode := t
-
-	for i := 0; i < len(splitted); i++ {
-		key := splitted[i]
-
-		if _, ok := currentNode.Childs[key]; !ok {
-			return
-		}
-
-		if i == len(splitted)-1 {
-			if len(currentNode.Childs[key].Childs) == 0 {
-				delete(currentNode.Childs, key)
-			} else {
-				currentNode.Childs[key].Handler = nil
-			}
-			return
-		}
-
-		currentNode = currentNode.Childs[key]
-	}
-}
 func (t *TreeNode) Dump() string {
 	b, _ := json.MarshalIndent(t, "", "  ")
 	return string(b)

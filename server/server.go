@@ -3,13 +3,14 @@ package server
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
 
+	"github.com/4nth0/golem/log"
 	"github.com/4nth0/golem/router"
-	log "github.com/sirupsen/logrus"
 )
 
 // Client is the the Server Client
@@ -44,14 +45,13 @@ func NewServer(port string, requests chan InboundRequest) *Client {
 // Listen start listening
 func (s *Client) Listen(ctx context.Context) {
 	s.Server.HandleFunc("/", func(w http.ResponseWriter, req *http.Request) {
-
-		log.WithFields(
-			log.Fields{
-				"method":  req.Method,
-				"path":    req.URL.Path,
-				"headers": req.Header,
-				"cookies": req.Cookies(),
-			}).Info("New inbound request.")
+		log.Info(
+			"New inbound request.",
+			"method", req.Method,
+			"path", req.URL.Path,
+			"headers", req.Header,
+			"cookies", req.Cookies(),
+		)
 
 		s.broadcastInboundRequest(req)
 
@@ -68,17 +68,17 @@ func (s *Client) Listen(ctx context.Context) {
 	})
 
 	srv := &http.Server{
-		Addr:    ":" + s.Port,
+		Addr:    fmt.Sprintf(":%s", s.Port),
 		Handler: s.Server,
 	}
 
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.WithFields(
-				log.Fields{
-					"err":  err,
-					"port": s.Port,
-				}).Error("Unable to start server listening.")
+			log.Error(
+				"Unable to start server listening.",
+				"err", err,
+				"port", s.Port,
+			)
 		}
 	}()
 
@@ -89,10 +89,10 @@ func (s *Client) Listen(ctx context.Context) {
 		cancel()
 	}()
 
-	log.Print("Server stopped")
+	log.Info("Server stopped")
 
 	if err := srv.Shutdown(ctxShutDown); err != nil {
-		log.Fatalf("server Shutdown Failed:%+s", err)
+		log.Error("server Shutdown Failed", "err", err)
 	}
 }
 
@@ -107,7 +107,7 @@ func (s *Client) broadcastInboundRequest(req *http.Request) {
 		if req.Body != nil {
 			body, err := ioutil.ReadAll(req.Body)
 			if err != nil {
-				log.Error("Unable to start server listening.")
+				log.Error("Unable to start server listening.", "err", err)
 			}
 			req.Body.Close()
 			inbound.Body = string(body)

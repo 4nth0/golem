@@ -55,4 +55,29 @@ func TestGetNode(t *testing.T) {
 
 }
 
-func TestDeleteNode(t *testing.T) {}
+func TestNodeWithDifferentMethods(t *testing.T) {
+	tree := NewTree()
+
+	tree.AddNode("/path/to/resource", "GET", DryHandler)
+	tree.AddNode("/path/to/resource", "POST", DryHandler)
+
+	// Vérifie la présence des deux méthodes
+	getHandler, _, _ := tree.GetNode("/path/to/resource", "GET")
+	assert.NotNil(t, getHandler)
+
+	postHandler, _, _ := tree.GetNode("/path/to/resource", "POST")
+	assert.NotNil(t, postHandler)
+}
+
+func TestTrailingSlash(t *testing.T) {
+	tree := NewTree()
+
+	tree.AddNode("/path/with/slash/", "GET", DryHandler)
+
+	// Vérifie la compatibilité avec et sans le slash final
+	handlerWithSlash, _, _ := tree.GetNode("/path/with/slash/", "GET")
+	assert.NotNil(t, handlerWithSlash)
+
+	handlerWithoutSlash, _, _ := tree.GetNode("/path/with/slash", "GET")
+	assert.NotNil(t, handlerWithoutSlash)
+}

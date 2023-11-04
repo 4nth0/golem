@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/4nth0/golem/log"
 )
 
 type FilesServerConfig struct {
@@ -17,9 +17,6 @@ func LaunchService(ctx context.Context, port string, config FilesServerConfig) {
 	http.Handle("/", fs)
 
 	if err := http.ListenAndServe(":"+port, nil); err != nil && err != http.ErrServerClosed {
-		log.WithFields(
-			log.Fields{
-				"err": err,
-			}).Error("Unable to start server listening.")
+		log.Error("Unable to start server listening.", "err", err)
 	}
 }
