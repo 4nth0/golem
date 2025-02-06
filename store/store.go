@@ -8,7 +8,7 @@ import (
 	"os"
 	"sync"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/4nth0/golem/log"
 )
 
 type Entries []interface{}
@@ -128,7 +128,7 @@ func (db *Database) Save() {
 	b, _ := json.Marshal(db.Entries)
 	err := ioutil.WriteFile(db.FilePath, b, 0644)
 	if err != nil {
-		log.Error("Err: ", err)
+		log.Error("Unable to write db file", "err", err)
 	}
 }
 

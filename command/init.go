@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/4nth0/golem/config"
+	"github.com/4nth0/golem/log"
 	httpService "github.com/4nth0/golem/services/http"
-	log "github.com/sirupsen/logrus"
 )
 
 var successMessage string = `
@@ -74,10 +74,7 @@ func InitGolem() (err error) {
 
 	err = cfg.Save()
 	if err != nil {
-		log.WithFields(
-			log.Fields{
-				"err": err,
-			}).Error("Unable to save configuration.")
+		log.Error("Unable to save configuration.", "err", err)
 	}
 
 	fmt.Printf(successMessage, ConfigPath, port)
@@ -108,21 +105,21 @@ func createFolders() {
 	if _, err := os.Stat(BasePath); os.IsNotExist(err) {
 		err = os.Mkdir(BasePath, os.ModePerm)
 		if err != nil {
-			log.Error("Unable to create base folder", err)
+			log.Error("Unable to create base folder", "err", err)
 		}
 	}
 
 	if _, err := os.Stat(TemplatePath); os.IsNotExist(err) {
 		err = os.Mkdir(TemplatePath, os.ModePerm)
 		if err != nil {
-			log.Error("Unable to create templates folder", err)
+			log.Error("Unable to create templates folder", "err", err)
 		}
 	}
 
 	if _, err := os.Stat(DatabasePath); os.IsNotExist(err) {
 		err = os.Mkdir(DatabasePath, os.ModePerm)
 		if err != nil {
-			log.Error("Unable to create db folder", err)
+			log.Error("Unable to create db folder", "err", err)
 		}
 	}
 }

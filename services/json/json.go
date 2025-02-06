@@ -7,11 +7,10 @@ import (
 	"os"
 	"text/tabwriter"
 
+	"github.com/4nth0/golem/log"
 	"github.com/4nth0/golem/router"
 	"github.com/4nth0/golem/server"
 	"github.com/4nth0/golem/store"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type JsonServer struct{}
@@ -46,12 +45,12 @@ func LaunchService(ctx context.Context, defaultServer *server.Client, port strin
 		log.Debug("No port provided, use the default server")
 		s = defaultServer
 	} else {
-		fmt.Println("There is no available server")
+		log.Debug("There is no available server")
 		return
 	}
 
 	for key, entity := range config.Entities {
-		log.Info("Create new DB for: ", key)
+		log.Info("Create new DB", "key", key)
 		mountEntity(key, entity, config.Sync, s.Router)
 		printServiceDetails(key)
 	}
@@ -91,7 +90,7 @@ func loadDatabaseFromFile(entity, path string, sync bool) *store.Database {
 	db := store.New(store.WithLocalFile(path, true))
 	err := db.Load()
 	if err != nil {
-		log.Error("Err: ", err)
+		log.Error("Unable to load database from local file", "err", err)
 	}
 
 	return db
