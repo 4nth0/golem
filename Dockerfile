@@ -1,4 +1,4 @@
-FROM golang:1.17.13-alpine3.16 as builder
+FROM golang:1.16.15-alpine3.15 as builder
 
 ARG GIT_TAG_NAME
 ARG LD_FLAGS="-s -w -X github.com/4nth0/golem/pkg/version.Version=$GIT_TAG_NAME"
